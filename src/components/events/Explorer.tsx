@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { EventSummary } from "@/lib/event-types";
 import { searchEvents, type Filters } from "@/lib/search";
@@ -22,11 +22,13 @@ const WHEN: { v: DatePreset | ""; label: string }[] = [
 export const TOURNAMENT_SPORTS = ["badminton", "football", "cricket", "chess", "tennis", "table-tennis", "kabaddi", "basketball", "volleyball", "hockey", "carrom", "squash", "martial-arts"];
 
 /** Search + filters + list/map views. All filtering runs in the browser; state lives in the URL. */
+// Native history update: Next keeps useSearchParams in sync, and no server round trip is needed.
+const setQuery = (qs: string) => window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+
 export function Explorer({ events, sports, cities, defaultView = "list", title }: {
   events: EventSummary[]; sports: SportOpt[]; cities: CityOpt[]; defaultView?: "list" | "map"; title?: string;
 }) {
   const sp = useSearchParams();
-  const router = useRouter();
   const { location, openPicker } = useLocation();
   const [now, setNow] = useState<Date | null>(null);
   const [bbox, setBbox] = useState<MapBounds | null>(null);
@@ -40,7 +42,7 @@ export function Explorer({ events, sports, cities, defaultView = "list", title }
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(sp.toString());
     for (const [k, v] of Object.entries(patch)) if (v === null || v === "") next.delete(k); else next.set(k, v);
-    router.replace(`?${next.toString()}`, { scroll: false });
+    setQuery(next.toString());
   };
 
   // Origin: explicit URL location, else the visitor's chosen location.
@@ -133,7 +135,7 @@ export function Explorer({ events, sports, cities, defaultView = "list", title }
           <strong className="text-ink-900">{hits.length}</strong> event{hits.length === 1 ? "" : "s"}
           {origin && <> near <button className="font-semibold underline decoration-dotted underline-offset-4" onClick={openPicker}>{originLabel}</button>{radius ? ` (within ${radius} KM)` : ""}</>}
           {bbox && <> in this map area · <button className="font-semibold text-brand-600" onClick={() => setBbox(null)}>clear</button></>}
-          {activeCount > 0 && <> · <button className="font-semibold text-brand-600" onClick={() => { setBbox(null); router.replace("?" + (view !== defaultView ? `view=${view}` : ""), { scroll: false }); }}>Reset filters</button></>}
+          {activeCount > 0 && <> · <button className="font-semibold text-brand-600" onClick={() => { setBbox(null); setQuery(view !== defaultView ? `view=${view}` : ""); }}>Reset filters</button></>}
         </p>
         <div className="flex items-center gap-2">
           <label className="sr-only" htmlFor="ex-sort">Sort</label>

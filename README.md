@@ -21,6 +21,7 @@ npm install
 npm run dev          # http://localhost:3000
 npm run build        # static site in out/
 npm start            # serve out/ locally
+npm run build:offline # copy in out-offline/ that opens by double-clicking index.html
 ```
 
 Checks: `npm run typecheck`, `npm test` (unit tests), `npm run test:e2e` (browser smoke test against a running `npm start`).
