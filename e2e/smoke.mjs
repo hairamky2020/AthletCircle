@@ -31,46 +31,50 @@ async function run(label, ctxOpts) {
   const settle = () => page.waitForTimeout(700);
 
   await page.goto(url("/")); await settle();
-  check(await page.getByRole("heading", { name: "Upcoming runs in Hyderabad" }).isVisible(), "home: heading");
-  check(await page.getByRole("heading", { name: "November 2026" }).isVisible(), "home: grouped by month");
-  check((await page.locator("main a[href*='runs/']").count()) >= 17, "home: lists the runs");
-  check((await page.content()).includes("Signathon"), "home: first run is there");
-  check(!(await page.content()).includes("Demo"), "home: no demo data");
+  check(await page.getByRole("heading", { name: /Every start line/ }).isVisible(), "home: hero");
+  check(await page.getByText("Next start line").isVisible(), "home: next run countdown");
+  for (const h of ["Upcoming runs", "All runs at a glance", "Calendar", "Map", "My runs"]) {
+    check((await page.getByRole("heading", { name: new RegExp(h) }).count()) > 0, `one page has section: ${h}`);
+  }
+  const cards = () => page.locator("#upcoming a.run-card");
+  check((await cards().count()) >= 17, `upcoming cards (${await cards().count()})`);
+  check(!(await page.content()).includes("Demo"), "no demo data");
   await shot("home");
 
-  await page.getByRole("button", { name: /Dec ’26/ }).click(); await settle();
-  const decCount = await page.locator("main ul a[href*='runs/']").count();
-  check(decCount === 3, `month chip filters (December: ${decCount})`);
+  await page.getByLabel("Month", { exact: true }).selectOption("2026-12"); await settle();
+  check((await cards().count()) === 3, `month filter (December: ${await cards().count()})`);
+  check((await page.locator("#list li").count()) === 3, "filters apply to the list too");
   check(page.url().includes("month=2026-12"), "month filter in URL");
   await page.getByRole("button", { name: "Clear" }).click(); await settle();
 
   await page.getByLabel("Area", { exact: true }).selectOption({ label: "Gachibowli (4)" }); await settle();
-  check((await page.locator("main ul a[href*='runs/']").count()) === 4, "area filter (Gachibowli: 4)");
+  check((await cards().count()) === 4, "area filter (Gachibowli: 4)");
   await page.getByRole("button", { name: "Clear" }).click(); await settle();
 
   await page.getByRole("button", { name: "Nearest to me" }).click(); await settle();
   await page.getByRole("button", { name: /Use my current location/ }).click(); await page.waitForTimeout(1200);
-  check(await page.getByText(/away/).first().isVisible(), "nearest to me shows distances");
-  const firstRun = await page.locator("main ul a[href*='runs/'] p").first().textContent();
+  check(await page.locator("#upcoming").getByText(/away/).first().isVisible(), "nearest to me shows distances");
+  const firstRun = await cards().first().locator("p").first().textContent();
   check(/Signathon|Hitech|Rehabathon|Sankalp/.test(firstRun ?? ""), `nearest first is a Gachibowli run (${firstRun?.trim()})`);
-  await shot("nearest");
+  await page.getByRole("button", { name: "Clear" }).click(); await settle();
 
-  await page.getByRole("link", { name: "List", exact: true }).click(); await page.waitForLoadState(); await settle();
-  check(pathOf(page.url()).startsWith("/list"), `list view URL ${pathOf(page.url())}`);
-  check((await page.locator("main ul a[href*='runs/']").count()) >= 17, "list view rows");
-  await shot("list");
+  // My runs
+  await cards().nth(1).getByRole("button", { name: /registered/ }).click(); await settle();
+  await page.locator("#list").getByRole("button", { name: /I’m registered/ }).nth(3).click(); await settle();
+  check((await page.locator(".my-runs-count").textContent()) === "2", "My runs button counts 2");
+  await page.getByRole("link", { name: /My runs/ }).first().click(); await page.waitForTimeout(1200);
+  check((await page.locator("#my-runs ol li").count()) === 2, "My runs section lists them");
+  await shot("myruns");
 
-  await page.goto(url("/calendar")); await settle();
-  check(await page.getByRole("heading", { name: /October 2026|November 2026/ }).isVisible(), "calendar month heading");
+  await page.locator(".section-nav").getByRole("link", { name: "Calendar" }).click(); await page.waitForTimeout(1200);
+  check(await page.locator('.section-nav a[aria-current="true"]').textContent() === "Calendar", "sticky menu scrolls and highlights");
   await page.getByRole("button", { name: "Next month" }).click(); await settle();
-  await page.getByRole("button", { name: "Next month" }).click(); await settle();
-  check(await page.getByRole("heading", { name: /December 2026|January 2027/ }).isVisible(), "calendar navigates months");
+  check(/November 2026|December 2026/.test(await page.locator("#calendar h3").first().textContent()), "calendar navigates months");
   await shot("calendar");
 
-  await page.goto(url("/map")); await page.waitForTimeout(2500);
+  await page.locator("#map").scrollIntoViewIfNeeded(); await page.waitForTimeout(2500);
   const markers = await page.locator(".rc-marker").count();
   check(markers >= 5, `map markers (${markers})`);
-  check(await page.getByText(/Venue not announced yet/).isVisible(), "map lists runs without a venue");
   await page.locator(".rc-marker").first().click({ force: true }); await settle();
   check(await page.locator(".rc-pop").isVisible(), "marker popup");
   await shot("map");
@@ -83,8 +87,9 @@ async function run(label, ctxOpts) {
   check(await page.getByRole("link", { name: "Google Calendar" }).isVisible(), "add to calendar");
   check(await page.getByText(/straight-line/).first().isVisible(), "distance from you");
   await shot("run");
-  await page.getByRole("link", { name: "Runs", exact: true }).first().click(); await page.waitForLoadState(); await settle();
-  check(/^\/(\?|$)/.test(pathOf(page.url())), `breadcrumb back to runs (${pathOf(page.url())})`);
+  check(await page.getByRole("button", { name: /Registered|I’m registered/ }).isVisible(), "run page has My runs toggle");
+  await page.locator("main nav").getByRole("link", { name: "Runs", exact: true }).click(); await page.waitForLoadState(); await settle();
+  check(/^\/(#upcoming)?$/.test(pathOf(page.url())), `breadcrumb back to runs (${pathOf(page.url())})`);
 
   await page.goto(url("/runs/premiethon-2026")); await settle();
   check(await page.getByText(/venue not announced yet/i).first().isVisible(), "run without venue says so");

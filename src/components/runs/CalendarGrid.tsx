@@ -39,8 +39,8 @@ export function CalendarGrid({ runs, today, initialMonth }: { runs: Run[]; today
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between border-b border-ink-900 pb-2">
-        <h2 className="text-2xl font-bold tracking-tight">{formatMonth(month)}</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-2xl font-black tracking-tight">{formatMonth(month)}</h3>
         <div className="flex items-center gap-2">
           <span className="mr-2 font-mono text-xs text-ink-500">{inMonth.length} {inMonth.length === 1 ? "run" : "runs"}</span>
           <button className="btn btn-ghost !px-3 !py-1" onClick={() => setMonth(shiftMonth(month, -1))} disabled={!canPrev} aria-label="Previous month">←</button>
@@ -49,18 +49,18 @@ export function CalendarGrid({ runs, today, initialMonth }: { runs: Run[]; today
       </div>
 
       {/* Grid on wider screens */}
-      <div className="hidden grid-cols-7 border-l border-t border-line md:grid" role="grid" aria-label={formatMonth(month)}>
-        {WEEKDAYS.map((d) => <div key={d} className="border-b border-r border-line px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-ink-500">{d}</div>)}
+      <div className="hidden grid-cols-7 overflow-hidden rounded-2xl border-l border-t border-ink-100 bg-white md:grid" role="grid" aria-label={formatMonth(month)}>
+        {WEEKDAYS.map((d) => <div key={d} className="border-b border-r border-ink-100 px-2 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-500">{d}</div>)}
         {cells.map((day, i) => {
           const list = day ? byDay.get(day) ?? [] : [];
           const weekend = i % 7 >= 5;
           return (
-            <div key={i} className={`min-h-[104px] border-b border-r border-line p-1.5 ${weekend ? "bg-ink-50" : "bg-white/40"} ${day === todayKey ? "outline outline-2 -outline-offset-2 outline-brand-500" : ""}`}>
+            <div key={i} className={`min-h-[108px] border-b border-r border-ink-100 p-2 ${weekend ? "bg-ink-50/70" : ""} ${day === todayKey ? "outline outline-2 -outline-offset-2 outline-brand-500" : ""}`}>
               {day && <span className={`text-xs ${list.length ? "font-bold" : "text-ink-400"}`}>{Number(day.slice(8))}</span>}
               <ul className="mt-1 space-y-1">
                 {list.map((r) => (
                   <li key={r.slug}>
-                    <Link href={runHref(r.slug)} className="block rounded-sm bg-ink-900 px-1.5 py-1 text-[12px] leading-tight text-white hover:bg-brand-600">{r.title}</Link>
+                    <Link href={runHref(r.slug)} className="block rounded-lg bg-ink-950 px-2 py-1.5 text-[12px] font-semibold leading-tight text-volt hover:bg-brand-500 hover:text-white">{r.title}</Link>
                   </li>
                 ))}
               </ul>
@@ -70,10 +70,10 @@ export function CalendarGrid({ runs, today, initialMonth }: { runs: Run[]; today
       </div>
 
       {/* Agenda on phones */}
-      <ul className="md:hidden">
+      <ul className="divide-y divide-ink-100 rounded-2xl bg-white px-4 md:hidden">
         {inMonth.length === 0 && <li className="py-6 text-sm text-ink-500">No runs this month.</li>}
         {inMonth.map((r) => (
-          <li key={r.slug} className="border-b border-line">
+          <li key={r.slug}>
             <Link href={runHref(r.slug)} className="flex gap-4 py-3">
               <span className="w-16 shrink-0 font-mono text-sm text-ink-500">{new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", weekday: "short", day: "numeric" }).format(new Date(`${r.date}T00:00:00Z`))}</span>
               <span className="font-semibold">{r.title}</span>

@@ -5,6 +5,7 @@ import { RUNS, getRun, otherRuns } from "@/data/events";
 import { JsonLd } from "@/components/JsonLd";
 import { DateBlock } from "@/components/runs/DateBlock";
 import { AddToCalendar } from "@/components/runs/AddToCalendar";
+import { RegisterToggle } from "@/components/runs/RegisterToggle";
 import { DistanceFromYou } from "@/components/runs/DistanceFromYou";
 import { LazyMap } from "@/components/map/LazyMap";
 import { formatLong, formatShort, placeLabel, webSearchUrl, runHref, monthKey, formatMonth } from "@/lib/runs";
@@ -58,9 +59,9 @@ export default async function RunPage({ params }: Params) {
     <div className="wrap pt-8">
       <JsonLd data={jsonLd} />
       <nav className="text-sm text-ink-500" aria-label="Breadcrumb">
-        <Link href="/" className="hover:text-ink-900">Runs</Link>
+        <Link href="/#upcoming" className="hover:text-ink-900">Runs</Link>
         <span className="mx-2">/</span>
-        <Link href={`/?month=${monthKey(run.date)}`} className="hover:text-ink-900">{formatMonth(monthKey(run.date))}</Link>
+        <Link href={`/?month=${monthKey(run.date)}#upcoming`} className="hover:text-ink-900">{formatMonth(monthKey(run.date))}</Link>
       </nav>
 
       {run.status !== "scheduled" && (
@@ -69,12 +70,13 @@ export default async function RunPage({ params }: Params) {
         </p>
       )}
 
-      <header className="mt-6 flex gap-6 border-b border-ink-900 pb-8">
+      <header className="mt-6 flex gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
         <DateBlock date={run.date} size="lg" />
         <div className="min-w-0">
           {run.featured && <p className="eyebrow !text-brand-600">Featured</p>}
           <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-5xl">{run.title}</h1>
           <p className="mt-2 text-lg text-ink-600">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
+          <div className="mt-5"><RegisterToggle slug={run.slug} size="lg" /></div>
         </div>
       </header>
 

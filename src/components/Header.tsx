@@ -1,29 +1,31 @@
+"use client";
+
 import Link from "next/link";
 import { LocationPill } from "./location/LocationPill";
-
-const NAV = [
-  { href: "/", label: "Runs" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/map", label: "Map" },
-  { href: "/add-a-run", label: "Add a run" },
-];
+import { useMyRuns } from "@/lib/myRuns";
 
 export function Header() {
+  const { slugs } = useMyRuns();
   return (
-    <header className="border-b border-line bg-paper">
-      <div className="wrap flex h-14 items-center gap-6">
-        <Link href="/" className="flex shrink-0 items-baseline gap-2" aria-label="AthletCircle home">
-          <span className="text-[19px] font-bold tracking-tight">athletcircle</span>
-          <span className="eyebrow hidden sm:inline">Hyderabad</span>
+    <header className="site-header">
+      <div className="wrap flex h-16 items-center gap-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="athletcircle home">
+          <span className="logo-mark" aria-hidden />
+          <span className="text-[19px] font-black tracking-tight text-white">athletcircle</span>
         </Link>
-        <nav className="hidden items-center gap-5 text-[15px] md:flex" aria-label="Main">
-          {NAV.map((n) => <Link key={n.href} href={n.href} className="text-ink-700 hover:text-ink-900">{n.label}</Link>)}
+        <nav className="hidden items-center gap-6 text-[15px] text-white/70 md:flex" aria-label="Main">
+          <Link href="/#upcoming" className="hover:text-white">Runs</Link>
+          <Link href="/#calendar" className="hover:text-white">Calendar</Link>
+          <Link href="/#map" className="hover:text-white">Map</Link>
+          <Link href="/add-a-run" className="hover:text-white">Add a run</Link>
         </nav>
-        <div className="ml-auto"><LocationPill /></div>
+        <div className="ml-auto flex items-center gap-4">
+          <span className="hidden sm:block"><LocationPill /></span>
+          <Link href="/#my-runs" className="my-runs-btn">
+            My runs<span className="my-runs-count">{slugs.length}</span>
+          </Link>
+        </div>
       </div>
-      <nav className="no-scrollbar wrap flex gap-5 overflow-x-auto pb-3 text-[15px] md:hidden" aria-label="Main mobile">
-        {NAV.map((n) => <Link key={n.href} href={n.href} className="shrink-0 whitespace-nowrap text-ink-700">{n.label}</Link>)}
-      </nav>
     </header>
   );
 }
