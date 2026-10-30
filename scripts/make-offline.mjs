@@ -29,7 +29,7 @@ var u;if(h.charAt(0)==="/"){var m=h.slice(1).match(/^([^?#]*)(.*)$/),p=m[1].repl
 if(!/\\.[a-z0-9]+$/i.test(p))p=p?p+".html":"index.html";u=new URL(B+p+m[2],location.href);}
 else{u=new URL(h,location.href);}return u.href;}
 document.addEventListener("click",function(e){if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
-var a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target==="_blank"||a.hasAttribute("download"))return;
+if(e.target.closest&&e.target.closest("button"))return;var a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target==="_blank"||a.hasAttribute("download"))return;
 var u=to(a.getAttribute("href"));if(!u)return;e.preventDefault();e.stopPropagation();location.href=u;},true);
 var f=window.fetch;window.fetch=function(i,o){var s=typeof i==="string"?i:i instanceof URL?i.href:i&&i.url;
 if(s&&(s.charAt(0)==="/"&&s.charAt(1)!=="/"||s.slice(0,5)==="file:")&&/\\.txt(\\?|$)|_rsc=/.test(s))return new Promise(function(){});
