@@ -31,9 +31,11 @@ async function run(label, ctxOpts) {
   const settle = () => page.waitForTimeout(700);
 
   await page.goto(url("/")); await settle();
-  check(await page.getByRole("heading", { name: /Every start line/ }).isVisible(), "home: hero");
-  check(await page.getByText("Next start line").isVisible(), "home: next run countdown");
-  for (const h of ["Upcoming runs", "All runs at a glance", "Calendar", "Map", "My runs"]) {
+  check(await page.locator(".banner .slide.is-active").isVisible(), "home: featured carousel");
+  check((await page.locator(".cat-card").count()) >= 5, "home: event categories");
+  check((await page.locator(".ad-slot").count()) >= 2, "home: ad spaces");
+  check(await page.locator(".countdown-card").isVisible(), "home: next run countdown");
+  for (const h of ["Event categories", "Upcoming runs", "All runs at a glance", "Calendar", "Map", "My runs"]) {
     check((await page.getByRole("heading", { name: new RegExp(h) }).count()) > 0, `one page has section: ${h}`);
   }
   const cards = () => page.locator("#upcoming a.run-card");
@@ -75,6 +77,7 @@ async function run(label, ctxOpts) {
   await page.locator("#map").scrollIntoViewIfNeeded(); await page.waitForTimeout(2500);
   const markers = await page.locator(".rc-marker").count();
   check(markers >= 5, `map markers (${markers})`);
+  await page.locator(".rc-marker").first().evaluate((el) => el.scrollIntoView({ block: "center" })); await settle();
   await page.locator(".rc-marker").first().click({ force: true }); await settle();
   check(await page.locator(".rc-pop").isVisible(), "marker popup");
   await shot("map");

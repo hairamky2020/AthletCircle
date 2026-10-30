@@ -11,7 +11,7 @@ export function Header() {
       <div className="wrap flex h-16 items-center gap-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="athletcircle home">
           <span className="logo-mark" aria-hidden />
-          <span className="text-[19px] font-black tracking-tight text-white">athletcircle</span>
+          <span className="logo-text text-[20px] font-black text-white">athlet<span className="text-brand-500">circle</span></span>
         </Link>
         <nav className="hidden items-center gap-6 text-[15px] text-white/70 md:flex" aria-label="Main">
           <Link href="/#upcoming" className="hover:text-white">Runs</Link>

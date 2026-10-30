@@ -22,6 +22,7 @@ export const eventSchema = z.object({
     lng: z.number().min(68).max(97.5),
     precision: z.enum(["venue", "area"]),          // "area" = centre of the locality, not the start line
   }).optional(),
+  kind: z.enum(["half", "marathon", "ultra", "theme", "cause", "community"]).default("community"),
   distances: z.array(z.string()).default([]),       // e.g. ["5K", "10K", "21.1K"]
   registrationUrl: url.optional(),
   websiteUrl: url.optional(),

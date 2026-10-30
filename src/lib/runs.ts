@@ -53,3 +53,14 @@ export const webSearchUrl = (r: Pick<Run, "title" | "date">) =>
   `https://www.google.com/search?q=${encodeURIComponent(`${r.title} Hyderabad ${r.date.slice(0, 4)} registration`)}`;
 
 export const runHref = (slug: string) => `/runs/${slug}`;
+
+/** Event categories shown on the home page (from each run's "kind"). */
+export const KINDS = {
+  half: { label: "Half marathons", short: "21.1K", blurb: "The classic 21.1 km" },
+  marathon: { label: "Marathons", short: "MARATHON", blurb: "Full distance and multi-distance" },
+  ultra: { label: "Ultras", short: "ULTRA", blurb: "Beyond the marathon" },
+  theme: { label: "Theme & fun runs", short: "FUN", blurb: "Colour, costumes and festivals" },
+  cause: { label: "Runs for a cause", short: "CAUSE", blurb: "Health, safety and charity" },
+  community: { label: "Community runs", short: "OPEN", blurb: "Local, friendly, open to all" },
+} as const;
+export type Kind = keyof typeof KINDS;

@@ -11,7 +11,8 @@
     },
     "featured": true,
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "hitech-marathon-2026",
@@ -25,7 +26,8 @@
     },
     "featured": true,
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "marathon"
   },
   {
     "slug": "equity-run-2026",
@@ -38,7 +40,8 @@
       "precision": "area"
     },
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "ethnic-run-2026",
@@ -46,7 +49,8 @@
     "date": "2026-11-01",
     "area": "Rajeev Nagar",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "theme"
   },
   {
     "slug": "halloween-run-2026",
@@ -54,7 +58,8 @@
     "date": "2026-11-01",
     "area": "Sanjeevaiah Park",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "theme"
   },
   {
     "slug": "rehabathon-2026",
@@ -68,7 +73,8 @@
     },
     "featured": true,
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "cause"
   },
   {
     "slug": "iit-hyderabad-half-marathon-2026",
@@ -83,14 +89,16 @@
     "featured": true,
     "note": "Location taken from the event name (IIT Hyderabad campus). Confirm the start point with the organiser.",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "half"
   },
   {
     "slug": "premiethon-2026",
     "title": "Premiethon 2026",
     "date": "2026-11-22",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "forest-run-uppal-2026",
@@ -103,14 +111,16 @@
       "precision": "area"
     },
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "run-for-child-health-2026",
     "title": "Run for Child Health",
     "date": "2026-11-29",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "cause"
   },
   {
     "slug": "sankalp-suraksha-run-2026",
@@ -124,14 +134,16 @@
     },
     "featured": true,
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "cause"
   },
   {
     "slug": "freshathon-winter-rush-2026",
     "title": "Freshathon Winter Rush: Paint the City Red",
     "date": "2026-12-13",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "theme"
   },
   {
     "slug": "telangana-ultra-marathon-2026",
@@ -144,41 +156,54 @@
       "precision": "area"
     },
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "ultra"
   },
   {
     "slug": "hyderabad-city-slam-2027",
-    "title": "Hyderabad City Slam: Winter Run",
+    "title": "Hyderabad City Slam: 21.1K Winter Run",
     "date": "2027-01-03",
-    "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "source": "ifinish.in event banner, 30 Oct 2026",
+    "added": "2026-10-30",
+    "kind": "half",
+    "distances": [
+      "21.1K",
+      "10K",
+      "5K"
+    ],
+    "note": "Venue to be announced. A virtual option (21.1K, 10K, 5K) is also listed.",
+    "websiteUrl": "https://ifinish.in/"
   },
   {
     "slug": "telangana-half-marathon-2027",
     "title": "Telangana Half Marathon 2027 (2nd edition)",
     "date": "2027-01-24",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "half"
   },
   {
     "slug": "hare-krishna-run-2027",
     "title": "Hare Krishna Run 2027 (2nd edition)",
     "date": "2027-02-07",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "finrun-hyderabad-2027",
     "title": "FinRun Hyderabad 2027",
     "date": "2027-02-07",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "community"
   },
   {
     "slug": "womens-day-run-2027",
     "title": "International Women's Day Run",
     "date": "2027-03-07",
     "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30"
+    "added": "2026-10-30",
+    "kind": "theme"
   }
 ]

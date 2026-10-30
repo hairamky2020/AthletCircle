@@ -61,8 +61,8 @@ describe("run data", () => {
     expect(RUNS[0].title).toBe("Signathon");
     expect(RUNS.at(-1)!.date).toBe("2027-03-07");
   });
-  it("never invents links, times or distances", () => {
-    for (const r of RUNS) {
+  it("never invents links, times or distances (except the one listing that announced them)", () => {
+    for (const r of RUNS.filter((x) => x.slug !== "hyderabad-city-slam-2027")) {
       expect(r.registrationUrl).toBeUndefined();
       expect(r.startTime).toBeUndefined();
       expect(r.distances).toEqual([]);
