@@ -1,0 +1,1 @@
+{ "version": 8, "name": "test-blank", "sources": {}, "layers": [{ "id": "bg", "type": "background", "paint": { "background-color": "#e8edf2" } }] }

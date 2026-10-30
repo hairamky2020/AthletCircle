@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AthletCircle
 
-## Getting Started
+India's sports event discovery website. Phase 1 is a fast static site: no database, no server, free maps.
 
-First, run the development server:
+## What it does
+
+- **Sports near me**: tap to use your location (or pick a city, area or PIN), choose a radius of 5 to 200 KM, and see events sorted by distance. Distances are straight-line ("as the crow flies") unless marked as road distance.
+- **Map**: free OpenStreetMap tiles (OpenFreeMap) with sport icons, clusters, radius ring and "Search this area".
+- **Road distance**: on event pages, from the free OSRM server, labelled "by car, without live traffic". If the server can't answer, nothing is shown; nothing is guessed.
+- **Search and filters**: sport, city, date, level, price, registration open, sorted by date or distance. Filters live in the URL so searches can be shared.
+- **Calendar**: month, week and list views with registration deadlines; add any event to Google Calendar or download an .ics file.
+- **Landing pages** for every state, city, city + sport, locality and "this weekend in {city}", plus sport and organiser pages. Thin pages are kept out of the sitemap and marked noindex.
+- **List your event** form (email or Formspree) and an internal **event entry helper** at `/tools/event-builder` that outputs validated JSON.
+
+Privacy: location is asked only when the visitor taps. Only a rounded location (about 1 KM) is remembered on their device; nothing is sent to us.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
+npm run build        # static site in out/
+npm start            # serve out/ locally
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Checks: `npm run typecheck`, `npm test` (unit tests), `npm run test:e2e` (browser smoke test against a running `npm start`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Adding real events
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Events live in `content/events.json` and organisers in `content/organisers.json`. Every record is checked at build time, so a bad record fails the build rather than reaching the site.
 
-## Learn More
+An event is shown only when **both** are true:
+- `verification.verified` is `true` and at least one source is listed (the official page you checked), and
+- `venue.pinVerified` is `true` (you confirmed the map pin is on the venue).
 
-To learn more about Next.js, take a look at the following resources:
+Three ways to add events:
+1. **Entry helper**: run the site, open `/tools/event-builder`, fill the form, copy the JSON into `content/events.json`.
+2. **Spreadsheet**: fill `content/templates/events-template.csv`, then `npm run import:csv -- path/to/file.csv` (add `--dry-run` to check first). Rows are matched by `slug`, so re-importing updates them.
+3. **By hand** in the JSON file.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run `npm run validate:data` to see how many records are valid, public and hidden, and why.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Never add an event you haven't confirmed from the organiser's own page, and always check the registration link opens.
 
-## Deploy on Vercel
+## Demo data
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Until real events are added, the site shows demo events marked "(Demo)" with example.com links. Turn them off by building with `NEXT_PUBLIC_SHOW_DEMO=false` (see `.env.example`). Demo events are never put in the sitemap or event schema.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy for free
+
+The build is plain files in `out/`, so any static host works:
+- **Cloudflare Pages** or **Netlify**: build command `npm run build`, output folder `out`.
+- **Vercel**: import the repo; it detects Next.js.
+
+Set `NEXT_PUBLIC_SITE_URL` to your domain and `NEXT_PUBLIC_SHOW_DEMO=false` once real events are in. Rebuild once a day (a scheduled deploy hook) so "this weekend" pages and past events stay fresh; lists also re-check dates in the visitor's browser.
+
+## Later phases
+
+The data layer (`src/data/events.ts`) is the only place that reads events, so it can be switched to an API or database without touching pages. A PostGIS schema for that is drafted in `docs/future-database-schema.sql`.
