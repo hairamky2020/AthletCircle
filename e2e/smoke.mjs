@@ -71,7 +71,7 @@ async function run(label, ctxOpts) {
   await page.locator(".section-nav").getByRole("link", { name: "Calendar" }).click(); await page.waitForTimeout(1200);
   check(await page.locator('.section-nav a[aria-current="true"]').textContent() === "Calendar", "sticky menu scrolls and highlights");
   await page.getByRole("button", { name: "Next month" }).click(); await settle();
-  check(/November 2026|December 2026/.test(await page.locator("#calendar h3").first().textContent()), "calendar navigates months");
+  check(/November|December/.test(await page.locator(".cal-poster-month").textContent()), "calendar navigates months");
   await shot("calendar");
 
   await page.locator("#map").scrollIntoViewIfNeeded(); await page.waitForTimeout(2500);

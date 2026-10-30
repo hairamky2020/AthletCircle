@@ -4,83 +4,104 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Run } from "@/data/schema";
 import { istDate } from "@/lib/dates";
-import { formatMonth, monthKey, runHref } from "@/lib/runs";
+import { dayParts, monthKey, placeLabel, relativeDay, runHref } from "@/lib/runs";
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const monthName = (key: string) => new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", month: "long" }).format(new Date(`${key}-01T00:00:00Z`));
+const monthShort = (key: string) => new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", month: "short" }).format(new Date(`${key}-01T00:00:00Z`));
 
-const shiftMonth = (key: string, by: number) => {
-  const [y, m] = key.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + by, 1));
-  return d.toISOString().slice(0, 7);
-};
-
-/** Month grid, Monday first. Weekends are shaded since most runs fall on them. */
+/**
+ * Race-day calendar: a month strip to jump between months, a poster-sized month with a mini grid
+ * where race days light up, and the month's race days as big date tiles.
+ */
 export function CalendarGrid({ runs, today, initialMonth }: { runs: Run[]; today: Date; initialMonth?: string }) {
   const todayKey = istDate(today);
-  const [month, setMonth] = useState(initialMonth ?? todayKey.slice(0, 7));
+  const months = [...new Set(runs.map((r) => monthKey(r.date)))].sort();
+  const [month, setMonth] = useState(initialMonth ?? months[0] ?? todayKey.slice(0, 7));
   useEffect(() => { if (initialMonth) setMonth(initialMonth); }, [initialMonth]);
 
   const [y, m] = month.split("-").map(Number);
-  const first = new Date(Date.UTC(y, m - 1, 1));
-  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  const lead = (first.getUTCDay() + 6) % 7;
-  const cells: (string | null)[] = [
-    ...Array(lead).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => `${month}-${String(i + 1).padStart(2, "0")}`),
-  ];
-  while (cells.length % 7) cells.push(null);
-
+  const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const byDay = new Map<string, Run[]>();
   for (const r of runs) byDay.set(r.date, [...(byDay.get(r.date) ?? []), r]);
-  const inMonth = runs.filter((r) => monthKey(r.date) === month);
-  const months = [...new Set(runs.map((r) => monthKey(r.date)))].sort();
-  const canPrev = months.some((k) => k < month);
-  const canNext = months.some((k) => k > month);
+  const raceDays = [...byDay.keys()].filter((d) => monthKey(d) === month).sort();
+  const count = raceDays.reduce((n, d) => n + byDay.get(d)!.length, 0);
+  const idx = months.indexOf(month);
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-black tracking-tight">{formatMonth(month)}</h3>
-        <div className="flex items-center gap-2">
-          <span className="mr-2 font-mono text-xs text-ink-500">{inMonth.length} {inMonth.length === 1 ? "run" : "runs"}</span>
-          <button className="btn btn-ghost !px-3 !py-1" onClick={() => setMonth(shiftMonth(month, -1))} disabled={!canPrev} aria-label="Previous month">←</button>
-          <button className="btn btn-ghost !px-3 !py-1" onClick={() => setMonth(shiftMonth(month, 1))} disabled={!canNext} aria-label="Next month">→</button>
-        </div>
-      </div>
-
-      {/* Grid on wider screens */}
-      <div className="hidden grid-cols-7 overflow-hidden rounded-2xl border-l border-t border-ink-100 bg-white md:grid" role="grid" aria-label={formatMonth(month)}>
-        {WEEKDAYS.map((d) => <div key={d} className="border-b border-r border-ink-100 px-2 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-500">{d}</div>)}
-        {cells.map((day, i) => {
-          const list = day ? byDay.get(day) ?? [] : [];
-          const weekend = i % 7 >= 5;
+    <div className="cal">
+      {/* Month strip */}
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0" role="tablist" aria-label="Months">
+        {months.map((k) => {
+          const n = runs.filter((r) => monthKey(r.date) === k).length;
           return (
-            <div key={i} className={`min-h-[108px] border-b border-r border-ink-100 p-2 ${weekend ? "bg-ink-50/70" : ""} ${day === todayKey ? "outline outline-2 -outline-offset-2 outline-brand-500" : ""}`}>
-              {day && <span className={`text-xs ${list.length ? "font-bold" : "text-ink-400"}`}>{Number(day.slice(8))}</span>}
-              <ul className="mt-1 space-y-1">
-                {list.map((r) => (
-                  <li key={r.slug}>
-                    <Link href={runHref(r.slug)} className="block rounded-lg bg-ink-950 px-2 py-1.5 text-[12px] font-semibold leading-tight text-volt hover:bg-brand-500 hover:text-white">{r.title}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <button key={k} role="tab" aria-selected={k === month} onClick={() => setMonth(k)} className="cal-month">
+              <span className="text-lg font-black italic uppercase leading-none">{monthShort(k)}</span>
+              <span className="text-[11px] font-semibold opacity-70">’{k.slice(2, 4)} · {n} {n === 1 ? "run" : "runs"}</span>
+            </button>
           );
         })}
       </div>
 
-      {/* Agenda on phones */}
-      <ul className="divide-y divide-ink-100 rounded-2xl bg-white px-4 md:hidden">
-        {inMonth.length === 0 && <li className="py-6 text-sm text-ink-500">No runs this month.</li>}
-        {inMonth.map((r) => (
-          <li key={r.slug}>
-            <Link href={runHref(r.slug)} className="flex gap-4 py-3">
-              <span className="w-16 shrink-0 font-mono text-sm text-ink-500">{new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", weekday: "short", day: "numeric" }).format(new Date(`${r.date}T00:00:00Z`))}</span>
-              <span className="font-semibold">{r.title}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="cal-stage">
+        {/* Poster side */}
+        <div className="cal-poster">
+          <p className="text-xs font-bold uppercase tracking-[.2em] text-white/70">{y}</p>
+          <h3 className="cal-poster-month">{monthName(month)}</h3>
+          <p className="mt-2 text-white/85"><span className="text-4xl font-black italic">{count}</span> {count === 1 ? "run" : "runs"} on {raceDays.length} race {raceDays.length === 1 ? "day" : "days"}</p>
+          <div className="mt-6 grid grid-cols-7 gap-1.5 text-center" role="grid" aria-label={`${monthName(month)} ${y}`}>
+            {WEEKDAYS.map((d, i) => <span key={i} className="text-[10px] font-bold text-white/50">{d}</span>)}
+            {Array.from({ length: lead }, (_, i) => <span key={`l${i}`} />)}
+            {Array.from({ length: days }, (_, i) => {
+              const key = `${month}-${String(i + 1).padStart(2, "0")}`;
+              const n = byDay.get(key)?.length ?? 0;
+              return (
+                <a key={key} href={n ? `#day-${key}` : undefined} aria-label={n ? `${i + 1}: ${n} runs` : undefined}
+                  className={`cal-dot ${n ? "has-runs" : ""} ${key === todayKey ? "is-today" : ""}`}
+                  onClick={(e) => { if (!n) return; e.preventDefault(); document.getElementById(`day-${key}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>
+                  {i + 1}{n > 1 && <sup>{n}</sup>}
+                </a>
+              );
+            })}
+          </div>
+          <div className="mt-6 flex gap-2">
+            <button className="cal-nav" disabled={idx <= 0} onClick={() => setMonth(months[idx - 1])} aria-label="Previous month">←</button>
+            <button className="cal-nav" disabled={idx < 0 || idx >= months.length - 1} onClick={() => setMonth(months[idx + 1])} aria-label="Next month">→</button>
+          </div>
+        </div>
+
+        {/* Race days */}
+        <ol className="cal-days">
+          {raceDays.length === 0 && <li className="p-6 text-ink-500">No runs this month.</li>}
+          {raceDays.map((d) => {
+            const p = dayParts(d);
+            const list = byDay.get(d)!;
+            return (
+              <li key={d} id={`day-${d}`} className="cal-day">
+                <div className="cal-day-date">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-brand-500">{p.weekday}</span>
+                  <span className="text-5xl font-black italic leading-none tracking-tighter">{p.day}</span>
+                  <span className="mt-1 text-[11px] font-semibold text-ink-500">{relativeDay(d, today)}</span>
+                </div>
+                <ul className="flex-1 space-y-2">
+                  {list.map((r) => (
+                    <li key={r.slug}>
+                      <Link href={runHref(r.slug)} className="cal-run group">
+                        <span className="min-w-0">
+                          <span className="block truncate font-extrabold">{r.title}</span>
+                          <span className="block truncate text-xs text-ink-500">{placeLabel(r) ?? "Venue not announced"}</span>
+                        </span>
+                        <span className="cal-run-arrow" aria-hidden>→</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </div>
   );
 }

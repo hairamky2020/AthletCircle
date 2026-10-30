@@ -142,7 +142,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           {shown.length === 0 ? <Empty /> : <ListTable runs={shown} now={now} distanceOf={distanceOf} />}
         </Section>
 
-        <Section id="calendar" kicker="03" title="Calendar" note="Weekends are shaded. Most runs are on Sundays.">
+        <Section id="calendar" kicker="03" title="Calendar" note="Pick a month, then tap a race day to jump to it.">
           <CalendarGrid runs={shown} today={now} initialMonth={f.month || months[0]?.key} />
         </Section>
 
