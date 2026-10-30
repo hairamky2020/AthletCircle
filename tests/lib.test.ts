@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { haversineMetres, formatDistance, formatDuration, coarsen, nextRadius, isInIndia } from "@/lib/geo";
-import { presetRange, istDate, formatEventDate } from "@/lib/dates";
-import { registrationStatus } from "@/lib/registration";
-import { searchEvents } from "@/lib/search";
-import type { EventSummary } from "@/lib/event-types";
+import { haversineMetres, formatDistance, coarsen, isInIndia } from "@/lib/geo";
+import { dayParts, groupByMonth, isPast, relativeDay, formatShort } from "@/lib/runs";
+import { buildIcs, googleCalendarUrl } from "@/lib/ics";
+import { RUNS, getRun, otherRuns } from "@/data/events";
 
 describe("geo", () => {
   it("computes straight-line distance (Gachibowli to HITEC City ≈ 3 km)", () => {
@@ -11,86 +10,69 @@ describe("geo", () => {
     expect(d).toBeGreaterThan(2800);
     expect(d).toBeLessThan(3100);
   });
-  it("formats kilometres and minutes", () => {
+  it("formats distance", () => {
     expect(formatDistance(3240)).toBe("3.2 KM");
-    expect(formatDistance(18400)).toBe("18 KM");
     expect(formatDistance(540)).toBe("540 M");
-    expect(formatDuration(900)).toBe("about 15 min");
-    expect(formatDuration(4800)).toBe("about 1 hr 20 min");
   });
   it("coarsens coordinates to ~1 km", () => {
     expect(coarsen({ lat: 17.440123, lng: 78.348987 })).toEqual({ lat: 17.44, lng: 78.35 });
   });
-  it("suggests the next radius", () => {
-    expect(nextRadius(25)).toBe(50);
-    expect(nextRadius(200)).toBeNull();
-  });
   it("rejects points outside India", () => {
     expect(isInIndia({ lat: 51.5, lng: -0.12 })).toBe(false);
-    expect(isInIndia({ lat: 12.97, lng: 77.59 })).toBe(true);
   });
 });
 
-describe("dates", () => {
-  it("uses IST calendar days", () => {
-    expect(istDate(new Date("2026-10-30T20:00:00Z"))).toBe("2026-10-31");
+describe("run dates", () => {
+  it("reads weekday and day from a calendar date", () => {
+    expect(dayParts("2026-10-31")).toMatchObject({ weekday: "Sat", day: 31, month: "Oct", year: 2026 });
+    expect(formatShort("2026-11-01")).toBe("Sun, 1 Nov");
   });
-  it("weekend preset on a Wednesday ends Monday 00:00 IST", () => {
-    const { to } = presetRange("weekend", new Date("2026-11-04T06:00:00Z")); // Wed
-    expect(to!.toISOString()).toBe("2026-11-08T18:30:00.000Z"); // Mon 9 Nov 00:00 IST
+  it("keeps a run listed through its day in IST", () => {
+    const run = { date: "2026-11-01" };
+    expect(isPast(run, new Date("2026-11-01T17:00:00Z"))).toBe(false); // 22:30 IST same day
+    expect(isPast(run, new Date("2026-11-01T19:00:00Z"))).toBe(true);  // 00:30 IST next day
   });
-  it("weekend preset on a Sunday covers only today", () => {
-    const { to } = presetRange("weekend", new Date("2026-11-08T06:00:00Z")); // Sun
-    expect(to!.toISOString()).toBe("2026-11-08T18:30:00.000Z");
+  it("describes how far away a date is", () => {
+    const now = new Date("2026-10-30T06:00:00Z");
+    expect(relativeDay("2026-10-30", now)).toBe("Today");
+    expect(relativeDay("2026-10-31", now)).toBe("Tomorrow");
+    expect(relativeDay("2026-11-05", now)).toBe("In 6 days");
   });
-  it("formats single and multi-day events", () => {
-    const now = new Date("2026-10-30T00:00:00Z");
-    expect(formatEventDate(new Date("2026-11-08T00:00:00+05:30"), null, now)).toMatch(/8 Nov/);
-    expect(formatEventDate(new Date("2026-11-09T08:00:00+05:30"), new Date("2026-11-10T18:00:00+05:30"), now)).toMatch(/9 Nov.*10 Nov/);
-  });
-});
-
-describe("registration status", () => {
-  const base = { state: "published", regOpensAt: null, regClosesAt: null, startAt: new Date("2026-12-01"), registrationUrl: "https://x.example" };
-  const now = new Date("2026-11-01T00:00:00Z");
-  it("open / closing soon / closed / not yet open", () => {
-    expect(registrationStatus({ ...base, regClosesAt: new Date("2026-11-20") }, now)).toBe("open");
-    expect(registrationStatus({ ...base, regClosesAt: new Date("2026-11-05") }, now)).toBe("closing_soon");
-    expect(registrationStatus({ ...base, regClosesAt: new Date("2026-10-20") }, now)).toBe("closed");
-    expect(registrationStatus({ ...base, regOpensAt: new Date("2026-11-10") }, now)).toBe("not_yet_open");
-  });
-  it("cancelled and past events", () => {
-    expect(registrationStatus({ ...base, state: "cancelled" }, now)).toBe("cancelled");
-    expect(registrationStatus({ ...base, startAt: new Date("2026-10-01") }, now)).toBe("completed");
+  it("groups by month in order", () => {
+    const g = groupByMonth([{ date: "2026-11-01" }, { date: "2026-11-22" }, { date: "2027-01-03" }]);
+    expect(g.map((x) => [x.label, x.items.length])).toEqual([["November 2026", 2], ["January 2027", 1]]);
   });
 });
 
-describe("search", () => {
-  const ev = (o: Partial<EventSummary>): EventSummary => ({
-    slug: "x", title: "X", sport: "10k", sportName: "10K", rootSport: "running", icon: "", colour: "#000",
-    start: "2026-11-08T05:00:00+05:30", end: null, status: "scheduled", venueName: "V", localityName: null,
-    cityPath: "in/telangana/hyderabad", cityName: "Hyderabad", statePath: "in/telangana", lat: 17.44, lng: 78.35,
-    regOpens: null, regCloses: null, registrationUrl: null, isFree: false, priceMin: null, priceMax: null, featured: false,
-    demo: false, level: "open", ageMin: null, ageMax: null, organiserName: null, lastVerified: null, added: null, ...o,
+describe("calendar export", () => {
+  const ev = { uid: "x", title: "Signathon", start: new Date("2026-10-31T00:00:00Z"), end: new Date("2026-11-01T00:00:00Z"), location: "Gachibowli", url: "https://x", allDay: true };
+  it("writes all-day dates", () => {
+    expect(buildIcs(ev)).toContain("DTSTART;VALUE=DATE:20261031");
+    expect(buildIcs(ev)).toContain("DTEND;VALUE=DATE:20261101");
+    expect(googleCalendarUrl(ev)).toContain("dates=20261031%2F20261101");
   });
-  const now = new Date("2026-11-01T00:00:00Z");
-  const list = [
-    ev({ slug: "near", lat: 17.445, lng: 78.35 }),
-    ev({ slug: "far", lat: 17.6, lng: 78.5, start: "2026-11-05T05:00:00+05:30" }),
-    ev({ slug: "past", start: "2026-10-01T05:00:00+05:30" }),
-    ev({ slug: "chess", sport: "chess", rootSport: "chess", title: "Chess Open", ageMin: 18 }),
-  ];
-  it("drops past events and sorts by date", () => {
-    expect(searchEvents(list, {}, now).map((e) => e.slug)).toEqual(["far", "near", "chess"]);
+});
+
+describe("run data", () => {
+  it("has the 18 Hyderabad runs, sorted by date, with unique slugs", () => {
+    expect(RUNS).toHaveLength(18);
+    expect(RUNS.map((r) => r.date)).toEqual([...RUNS.map((r) => r.date)].sort());
+    expect(new Set(RUNS.map((r) => r.slug)).size).toBe(18);
+    expect(RUNS[0].title).toBe("Signathon");
+    expect(RUNS.at(-1)!.date).toBe("2027-03-07");
   });
-  it("filters by radius and sorts nearest first", () => {
-    const r = searchEvents(list, { origin: { lat: 17.44, lng: 78.35 }, radiusKm: 5 }, now);
-    expect(r.map((e) => e.slug)).toEqual(["chess", "near"]); // chess sits exactly at the origin
-    expect(r[1].distanceM).toBeLessThan(1000);
+  it("never invents links, times or distances", () => {
+    for (const r of RUNS) {
+      expect(r.registrationUrl).toBeUndefined();
+      expect(r.startTime).toBeUndefined();
+      expect(r.distances).toEqual([]);
+    }
   });
-  it("filters by sport tree, text and age", () => {
-    expect(searchEvents(list, { sports: new Set(["chess"]) }, now).map((e) => e.slug)).toEqual(["chess"]);
-    expect(searchEvents(list, { q: "chess open" }, now).map((e) => e.slug)).toEqual(["chess"]);
-    expect(searchEvents(list, { age: 12 }, now).map((e) => e.slug)).not.toContain("chess");
+  it("marks area pins as approximate", () => {
+    expect(RUNS.filter((r) => r.location).every((r) => r.location!.precision === "area")).toBe(true);
+  });
+  it("finds runs around the same date", () => {
+    const o = otherRuns(getRun("hitech-marathon-2026")!);
+    expect(o.map((x) => x.date)).toContain("2026-11-01");
   });
 });

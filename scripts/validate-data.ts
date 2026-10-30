@@ -1,9 +1,10 @@
-// Validates content/*.json the same way the build does, and lists records that are hidden
-// (not verified or pin not confirmed) or past. Usage: npm run validate:data
-import { ALL_EVENTS, PUBLIC_EVENTS, isPublic } from "../src/data/events";
+// Checks content/events.json and prints a short summary. Run: npm run validate:data
+import { RUNS } from "../src/data/events";
+import { istDate } from "../src/lib/dates";
 
-const now = Date.now();
-const hidden = ALL_EVENTS.filter((e) => !isPublic(e));
-const past = PUBLIC_EVENTS.filter((e) => Date.parse(e.end ?? e.start) < now);
-console.log(`✓ ${ALL_EVENTS.length} records valid · ${PUBLIC_EVENTS.length} public · ${hidden.length} hidden · ${past.length} past`);
-for (const e of hidden) console.log(`  hidden: ${e.slug} (${!e.verification.verified ? "not verified" : "pin not confirmed"})`);
+const today = istDate(new Date());
+const past = RUNS.filter((r) => (r.endDate ?? r.date) < today);
+const noPlace = RUNS.filter((r) => !r.location);
+const noLink = RUNS.filter((r) => !r.registrationUrl);
+console.log(`✓ ${RUNS.length} runs valid · ${RUNS.length - past.length} upcoming · ${past.length} past`);
+console.log(`  ${noPlace.length} without a map location, ${noLink.length} without a registration link`);

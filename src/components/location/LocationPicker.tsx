@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocation, type UserLocation } from "./LocationProvider";
-import { searchPlaces, launchCities, allCities, type PlaceHit } from "@/data/locations";
+import { searchPlaces, children, type PlaceHit } from "@/data/locations";
 import { isInIndia } from "@/lib/geo";
 import { SITE } from "@/lib/site";
 
@@ -67,18 +67,18 @@ export function LocationPicker() {
     closePicker();
   };
 
-  const popular = launchCities().concat(allCities().filter((c) => ["in/tamil-nadu/chennai", "in/maharashtra/mumbai", "in/maharashtra/pune", "in/delhi/new-delhi"].includes(c.path)));
+  const popular = children("in/telangana/hyderabad").filter((p) => ["gachibowli", "hitec-city", "kukatpally", "secunderabad", "uppal", "banjara-hills", "lb-nagar", "kompally"].some((s) => p.path.endsWith("/" + s)));
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-ink-900/50 p-0 sm:items-start sm:p-6 sm:pt-24" onClick={closePicker} role="dialog" aria-modal="true" aria-label="Choose your location">
-      <div className="max-h-[90vh] w-full overflow-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90vh] w-full overflow-auto rounded-t-xl bg-paper p-5 shadow-2xl sm:max-w-lg sm:rounded-lg" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold">Where are you?</h2>
           <button onClick={closePicker} className="rounded-full p-2 text-ink-500 hover:bg-ink-100" aria-label="Close">✕</button>
         </div>
 
         <button onClick={async () => { if (await detect()) closePicker(); }} disabled={detecting} className="btn btn-dark w-full">
-          <span aria-hidden>📍</span> {detecting ? "Detecting…" : "Use my current location"}
+          {detecting ? "Detecting…" : "Use my current location"}
         </button>
         <p className="mt-2 text-xs text-ink-500">Your browser asks first. Your exact location stays on your device and is never shown publicly.</p>
         {error && <p className="mt-3 rounded-lg bg-brand-50 p-3 text-sm text-brand-700">{error}</p>}
@@ -86,13 +86,13 @@ export function LocationPicker() {
         <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-wide text-ink-400"><span className="h-px flex-1 bg-ink-200" />or<span className="h-px flex-1 bg-ink-200" /></div>
 
         <form onSubmit={(e) => { e.preventDefault(); if (hits[0]) choose(hits[0]); else void searchAddress(); }}>
-          <label htmlFor="loc-q" className="mb-1 block text-sm font-medium">Search locality, city or PIN code</label>
-          <input id="loc-q" ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Gachibowli, Bengaluru or 500032"
-            className="w-full rounded-xl border border-ink-200 px-4 py-3 text-base outline-none focus:border-ink-900" autoComplete="off" />
+          <label htmlFor="loc-q" className="mb-1 block text-sm font-medium">Search an area or PIN code</label>
+          <input id="loc-q" ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Kondapur or 500032"
+            className="w-full rounded-md border border-ink-200 px-4 py-3 text-base outline-none focus:border-ink-900" autoComplete="off" />
         </form>
 
         {hits.length > 0 && (
-          <ul className="mt-2 divide-y divide-ink-100 rounded-xl border border-ink-100">
+          <ul className="mt-2 divide-y divide-ink-100 rounded-md border border-ink-100">
             {hits.map((h) => (
               <li key={h.path + h.label}>
                 <button className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-ink-50" onClick={() => choose(h)}>
@@ -112,7 +112,7 @@ export function LocationPicker() {
             {addrState === "none" && <p className="mt-1 text-sm text-ink-500">No matching place found in India.</p>}
             {addrState === "error" && <p className="mt-1 text-sm text-ink-500">Address search is unavailable right now. Try a locality or city.</p>}
             {addrHits.length > 0 && (
-              <ul className="mt-2 divide-y divide-ink-100 rounded-xl border border-ink-100">
+              <ul className="mt-2 divide-y divide-ink-100 rounded-md border border-ink-100">
                 {addrHits.map((h, i) => (
                   <li key={i}><button className="w-full px-4 py-3 text-left hover:bg-ink-50" onClick={() => chooseAddress(h)}>
                     <span className="font-medium">{h.label}</span> <span className="text-sm text-ink-500">{h.sublabel}</span>
@@ -125,11 +125,11 @@ export function LocationPicker() {
         )}
 
         <div className="mt-5">
-          <p className="mb-2 text-sm font-medium">Popular cities</p>
+          <p className="mb-2 text-sm font-medium">Areas in Hyderabad</p>
           <div className="flex flex-wrap gap-2">
             {popular.map((c) => (
-              <button key={c.path} className={`chip ${location?.cityPath === c.path ? "is-active" : ""}`}
-                onClick={() => choose({ label: c.name, sublabel: "", lat: c.lat!, lng: c.lng!, path: c.path, type: "city" })}>
+              <button key={c.path} className={`chip ${location?.label === c.name ? "is-active" : ""}`}
+                onClick={() => choose({ label: c.name, sublabel: "", lat: c.lat!, lng: c.lng!, path: c.path, type: "locality" })}>
                 {c.name}
               </button>
             ))}

@@ -1,44 +1,18 @@
 import Link from "next/link";
-import { topSports } from "@/data/sports";
-import { launchCities, allCities } from "@/data/locations";
-import { placeHref } from "@/data/locations";
+import { SITE } from "@/lib/site";
 
 export function Footer() {
-  const sports = topSports().slice(0, 10);
-  const cities = launchCities().concat(allCities().filter((c) => !c.launch).slice(0, 8));
   return (
-    <footer className="mt-20 border-t border-ink-100 bg-ink-900 text-ink-200">
-      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <p className="text-lg font-extrabold text-white">Athlet<span className="text-brand-500">Circle</span></p>
-          <p className="mt-2 text-sm text-ink-300">Discover sports. Find events. Explore nearby. Participate.</p>
-          <p className="mt-4 text-xs text-ink-400">We list events from organisers across India and link to their official registration pages. We don&apos;t sell tickets.</p>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white">Sports</p>
-          <ul className="grid grid-cols-2 gap-1.5 text-sm">
-            {sports.map((s) => <li key={s.slug}><Link className="hover:text-white" href={`/sports/${s.slug}/`}>{s.name}</Link></li>)}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white">Cities</p>
-          <ul className="grid grid-cols-2 gap-1.5 text-sm">
-            {cities.map((c) => <li key={c.path}><Link className="hover:text-white" href={`${placeHref(c.path)}/`}>{c.name}</Link></li>)}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white">AthletCircle</p>
-          <ul className="space-y-1.5 text-sm">
-            <li><Link className="hover:text-white" href="/list-your-event/">List your event</Link></li>
-            <li><Link className="hover:text-white" href="/how-we-verify/">How we verify events</Link></li>
-            <li><Link className="hover:text-white" href="/about/">About</Link></li>
-            <li><Link className="hover:text-white" href="/privacy/">Privacy</Link></li>
-          </ul>
-        </div>
+    <footer className="mt-20 border-t border-line">
+      <div className="wrap flex flex-col gap-4 py-8 text-sm text-ink-500 md:flex-row md:items-center md:justify-between">
+        <p>athletcircle · running events in Hyderabad. More sports and cities later.</p>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
+          <Link href="/about" className="hover:text-ink-900">About</Link>
+          <Link href="/add-a-run" className="hover:text-ink-900">Add a run</Link>
+          <a href={`mailto:${SITE.contactEmail}`} className="hover:text-ink-900">{SITE.contactEmail}</a>
+        </nav>
       </div>
-      <div className="border-t border-ink-800">
-        <p className="container-page py-4 text-xs text-ink-400">© {new Date().getFullYear()} AthletCircle · Map data © OpenStreetMap contributors</p>
-      </div>
+      <p className="wrap pb-8 text-xs text-ink-400">Maps © OpenStreetMap contributors, tiles by OpenFreeMap. Always confirm dates and details with the organiser.</p>
     </footer>
   );
 }

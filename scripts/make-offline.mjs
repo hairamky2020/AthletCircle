@@ -13,19 +13,21 @@ const walk = (dir) => readdirSync(dir).flatMap((f) => {
   return statSync(p).isDirectory() ? walk(p) : [p];
 });
 
-// "/events/x/?a=1" -> "events/x/index.html?a=1"; asset paths are left as they are.
+// Clean URLs map to the exported files: "/" -> "index.html", "/runs/x?a=1" -> "runs/x.html?a=1".
+// Asset paths (with an extension) are left as they are.
 const mapPath = (p) => {
   const [, path, rest] = p.match(/^([^?#]*)(.*)$/);
   if (/\.[a-z0-9]+$/i.test(path)) return path + rest;
-  return path + (path === "" || path.endsWith("/") ? "index.html" : "/index.html") + rest;
+  const clean = path.replace(/\/$/, "");
+  return (clean ? `${clean}.html` : "index.html") + rest;
 };
 
 // Runs before Next's router: sends internal links to the right index.html on disk.
 const runtime = `(function(){var B=window.__AC_BASE__;
 function to(h){if(!h||h.charAt(0)==="#"||/^[a-z][a-z0-9+.-]*:/i.test(h)||h.slice(0,2)==="//")return null;
-var u;if(h.charAt(0)==="/"){var m=h.slice(1).match(/^([^?#]*)(.*)$/),p=m[1];
-if(!/\\.[a-z0-9]+$/i.test(p))p+=(p===""||p.slice(-1)==="/")?"index.html":"/index.html";u=new URL(B+p+m[2],location.href);}
-else{u=new URL(h,location.href);if(u.pathname.slice(-1)==="/")u.pathname+="index.html";}return u.href;}
+var u;if(h.charAt(0)==="/"){var m=h.slice(1).match(/^([^?#]*)(.*)$/),p=m[1].replace(/\\/$/,"");
+if(!/\\.[a-z0-9]+$/i.test(p))p=p?p+".html":"index.html";u=new URL(B+p+m[2],location.href);}
+else{u=new URL(h,location.href);}return u.href;}
 document.addEventListener("click",function(e){if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
 var a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target==="_blank"||a.hasAttribute("download"))return;
 var u=to(a.getAttribute("href"));if(!u)return;e.preventDefault();e.stopPropagation();location.href=u;},true);

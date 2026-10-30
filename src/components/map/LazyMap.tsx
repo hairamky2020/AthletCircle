@@ -3,15 +3,15 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { ComponentProps } from "react";
-import type { EventMap as EventMapType } from "./EventMap";
+import type { RunMap as RunMapType } from "./RunMap";
 
-const EventMap = dynamic(() => import("./EventMap").then((m) => m.EventMap), {
+const RunMap = dynamic(() => import("./RunMap").then((m) => m.RunMap), {
   ssr: false,
-  loading: () => <div className="grid h-full w-full place-items-center rounded-2xl bg-ink-100 text-sm text-ink-500">Loading map…</div>,
+  loading: () => <div className="grid h-full w-full place-items-center bg-ink-100 text-sm text-ink-500">Loading map…</div>,
 });
 
 /** Loads the map library only when the map scrolls into view (keeps pages fast). */
-export function LazyMap(props: ComponentProps<typeof EventMapType> & { height?: string }) {
+export function LazyMap(props: ComponentProps<typeof RunMapType> & { height?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -21,8 +21,8 @@ export function LazyMap(props: ComponentProps<typeof EventMapType> & { height?: 
     return () => io.disconnect();
   }, []);
   return (
-    <div ref={ref} className={props.height ?? "h-[420px]"}>
-      {show ? <EventMap {...props} className="h-full w-full rounded-2xl" /> : <div className="h-full w-full rounded-2xl bg-ink-100" />}
+    <div ref={ref} className={`${props.height ?? "h-[420px]"} overflow-hidden rounded-lg border border-line`}>
+      {show ? <RunMap {...props} className="h-full w-full" /> : <div className="h-full w-full bg-ink-100" />}
     </div>
   );
 }

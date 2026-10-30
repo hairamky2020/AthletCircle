@@ -2,14 +2,13 @@
 
 import { useLocation } from "./LocationProvider";
 
-export function LocationPill({ compact = false }: { compact?: boolean }) {
+export function LocationPill() {
   const { location, ready, openPicker } = useLocation();
   return (
-    <button onClick={openPicker} className="inline-flex max-w-[220px] items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-sm hover:border-ink-400"
+    <button onClick={openPicker} className="inline-flex max-w-[200px] items-center gap-1.5 text-sm text-ink-700 hover:text-ink-900"
       aria-label={location ? `Location: ${location.label}. Change` : "Set your location"}>
-      <span aria-hidden>📍</span>
-      <span className="truncate font-medium">{!ready ? "…" : location ? (compact ? location.label : `Near ${location.label}`) : "Set location"}</span>
-      <span className="text-ink-400" aria-hidden>▾</span>
+      <svg width="12" height="14" viewBox="0 0 12 14" aria-hidden className="shrink-0"><path d="M6 13.5S1 8.6 1 5.5a5 5 0 0 1 10 0c0 3.1-5 8-5 8Z" fill="none" stroke="currentColor" strokeWidth="1.4"/><circle cx="6" cy="5.5" r="1.6" fill="currentColor"/></svg>
+      <span className="truncate">{!ready ? "…" : location ? location.label : "Set your location"}</span>
     </button>
   );
 }

@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 // (Vercel, Netlify, Cloudflare Pages or GitHub Pages). No server or database needed.
 const nextConfig: NextConfig = {
   output: "export",
-  trailingSlash: true,
+  trailingSlash: false,             // clean URLs: /runs/hitech-marathon-2026
   images: { unoptimized: true },
 };
 

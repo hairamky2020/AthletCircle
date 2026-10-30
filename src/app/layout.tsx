@@ -8,13 +8,13 @@ import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: "AthletCircle · Sports events near you in India", template: "%s · AthletCircle" },
-  description: "Find running events, marathons, tournaments and sports competitions near you across India. See distance, dates and official registration links on one map and calendar.",
-  openGraph: { siteName: "AthletCircle", type: "website", locale: "en_IN" },
+  title: { default: "Running events in Hyderabad · athletcircle", template: "%s · athletcircle" },
+  description: "Upcoming runs, half marathons and ultras in Hyderabad, by month, on a calendar and on a map.",
+  openGraph: { siteName: "athletcircle", type: "website", locale: "en_IN" },
   twitter: { card: "summary_large_image" },
 };
 
-export const viewport: Viewport = { themeColor: "#ff5a1f", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#f7f5f0", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { Explorer } from "@/components/events/Explorer";
-import { upcoming } from "@/data/events";
-import { sportOptions, cityOptions } from "@/lib/options";
+import { RunsPage } from "@/components/runs/RunsPage";
 
-export const metadata: Metadata = {
-  title: "Sports events map of India",
-  description: "Explore upcoming runs, rides, tournaments and competitions on an interactive map. Filter by sport, date and distance.",
-  alternates: { canonical: "/map/" },
-};
+export const metadata: Metadata = { title: "Map of runs in Hyderabad", description: "See where upcoming runs in Hyderabad take place, and how far they are from you.", alternates: { canonical: "/map" } };
 
 export default function MapPage() {
-  return (
-    <Suspense>
-      <Explorer events={upcoming()} sports={sportOptions()} cities={cityOptions()} defaultView="map" title="Sports events map" />
-    </Suspense>
-  );
+  return <RunsPage view="map" />;
 }

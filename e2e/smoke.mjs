@@ -1,132 +1,102 @@
-// Browser smoke tests against a static build served on BASE (default http://localhost:3000).
-// Build for tests with a local blank map style so tiles aren't needed:
-//   NEXT_PUBLIC_MAP_STYLE_URL=/test-map-style.json npm run build && cp e2e/test-map-style.json out/ && npx serve out
+// Browser smoke test on desktop and phone sizes.
+//   Served site:      BASE=http://localhost:3000 node e2e/smoke.mjs
+//   Double-click copy: FILE=/abs/path/to/out-offline node e2e/smoke.mjs
+// SHOTS=/some/dir saves screenshots.
 import { createRequire } from "node:module";
-// Uses the machine's installed Playwright (CommonJS resolution honours NODE_PATH).
 const { chromium, devices } = createRequire(import.meta.url)("playwright");
 
+const FILE = process.env.FILE;
 const BASE = process.env.BASE ?? "http://localhost:3000";
-const SHOTS = process.env.SHOTS; // optional folder for screenshots
-const GACHIBOWLI = { latitude: 17.4401, longitude: 78.3489 };
-let failures = 0;
+const SHOTS = process.env.SHOTS;
+// "/runs/x?a=1" -> URL for the mode under test
+const url = (p) => {
+  if (!FILE) return BASE + p;
+  const [, path, rest] = p.match(/^([^?#]*)(.*)$/);
+  return `file://${FILE}/${path === "/" ? "index" : path.slice(1)}.html${rest}`;
+};
+const pathOf = (u) => FILE ? u.replace(`file://${FILE}/`, "/").replace(/index\.html/, "").replace(/\.html/, "") : u.replace(BASE, "");
 
-async function check(name, fn) {
-  try { await fn(); console.log(`✓ ${name}`); }
-  catch (e) { failures++; console.log(`✗ ${name}\n    ${e.message.split("\n")[0]}`); }
-}
-const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
+let failed = 0;
+const check = (ok, msg) => { console.log(`${ok ? "✓" : "✗"} ${msg}`); if (!ok) failed++; };
 
-const browser = await chromium.launch();
-for (const [label, opts] of [["desktop", { viewport: { width: 1366, height: 900 } }], ["mobile", devices["Pixel 7"]]]) {
-  console.log(`\n— ${label}`);
-  const ctx = await browser.newContext({ ...opts, geolocation: GACHIBOWLI, permissions: ["geolocation"], locale: "en-IN", timezoneId: "Asia/Kolkata" });
+async function run(label, ctxOpts) {
+  console.log(`\n— ${label}${FILE ? " (file://)" : ""}`);
+  const browser = await chromium.launch();
+  const ctx = await browser.newContext({ ...ctxOpts, geolocation: { latitude: 17.4401, longitude: 78.3489 }, permissions: ["geolocation"] });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource|net::ERR/.test(m.text())) errors.push(m.text()); });
-  const shot = async (n) => SHOTS && page.screenshot({ path: `${SHOTS}/${label}-${n}.png`, fullPage: false });
+  page.on("console", (m) => m.type() === "error" && !/tiles|Failed to load resource/.test(m.text()) && errors.push(m.text()));
+  const shot = async (n) => SHOTS && page.screenshot({ path: `${SHOTS}/${label}-${n}.png` });
+  const settle = () => page.waitForTimeout(700);
 
-  await check("home renders hero, demo notice and sections", async () => {
-    await page.goto(BASE + "/");
-    await page.getByRole("heading", { level: 1 }).waitFor();
-    expect(await page.getByText("Preview mode").count() === 1, "demo notice missing");
-    expect(await page.getByRole("heading", { name: "Sports near me" }).count() === 1, "near me section missing");
-    await shot("home");
-  });
+  await page.goto(url("/")); await settle();
+  check(await page.getByRole("heading", { name: "Upcoming runs in Hyderabad" }).isVisible(), "home: heading");
+  check(await page.getByRole("heading", { name: "November 2026" }).isVisible(), "home: grouped by month");
+  check((await page.locator("main a[href*='runs/']").count()) >= 17, "home: lists the runs");
+  check((await page.content()).includes("Signathon"), "home: first run is there");
+  check(!(await page.content()).includes("Demo"), "home: no demo data");
+  await shot("home");
 
-  await check("Sports Near Me uses GPS and shows straight-line distances", async () => {
-    await page.locator("#near-me").getByRole("button", { name: /Use my location/ }).click();
-    await page.locator("#near-me").getByText(/events? within 25 KM/).waitFor({ timeout: 10000 });
-    const txt = await page.locator("#near-me").innerText();
-    expect(/KM away \(straight-line\)|M away \(straight-line\)/.test(txt), "no straight-line distance label");
-    expect(/Near Gachibowli/.test(await page.locator("header").innerText()), "location pill not updated");
-    await page.locator("#near-me").scrollIntoViewIfNeeded();
-    await shot("near-me");
-  });
+  await page.getByRole("button", { name: /Dec ’26/ }).click(); await settle();
+  const decCount = await page.locator("main ul a[href*='runs/']").count();
+  check(decCount === 3, `month chip filters (December: ${decCount})`);
+  check(page.url().includes("month=2026-12"), "month filter in URL");
+  await page.getByRole("button", { name: "Clear" }).click(); await settle();
 
-  await check("radius chip changes results", async () => {
-    const before = await page.locator("#near-me").getByText(/events? within \d+ KM/).innerText();
-    await page.locator("#near-me").getByRole("button", { name: "5 KM", exact: true }).click();
-    const after = await page.locator("#near-me").getByText(/events? within \d+ KM/).innerText();
-    expect(before !== after && /within 5 KM/.test(after), `unchanged: ${after}`);
-  });
+  await page.getByLabel("Area", { exact: true }).selectOption({ label: "Gachibowli (4)" }); await settle();
+  check((await page.locator("main ul a[href*='runs/']").count()) === 4, "area filter (Gachibowli: 4)");
+  await page.getByRole("button", { name: "Clear" }).click(); await settle();
 
-  await check("location picker finds a PIN code", async () => {
-    await page.locator("header").getByRole("button", { name: /Location/ }).click();
-    await page.getByLabel("Search locality, city or PIN code").fill("560034");
-    await page.getByRole("button", { name: /560034 · Koramangala/ }).click();
-    expect(/560034/.test(await page.locator("header").innerText()), "pin not applied");
-  });
+  await page.getByRole("button", { name: "Nearest to me" }).click(); await settle();
+  await page.getByRole("button", { name: /Use my current location/ }).click(); await page.waitForTimeout(1200);
+  check(await page.getByText(/away/).first().isVisible(), "nearest to me shows distances");
+  const firstRun = await page.locator("main ul a[href*='runs/'] p").first().textContent();
+  check(/Signathon|Hitech|Rehabathon|Sankalp/.test(firstRun ?? ""), `nearest first is a Gachibowli run (${firstRun?.trim()})`);
+  await shot("nearest");
 
-  await check("search filters by text", async () => {
-    await page.goto(BASE + "/search/?q=badminton");
-    await page.getByText(/\d+ events?/).first().waitFor();
-    const titles = await page.locator("article h3").allInnerTexts();
-    expect(titles.length > 0 && titles.every((t) => /badminton/i.test(t)), `unexpected: ${titles.join(" | ")}`);
-    await shot("search");
-  });
+  await page.getByRole("link", { name: "List", exact: true }).click(); await page.waitForLoadState(); await settle();
+  check(pathOf(page.url()).startsWith("/list"), `list view URL ${pathOf(page.url())}`);
+  check((await page.locator("main ul a[href*='runs/']").count()) >= 17, "list view rows");
+  await shot("list");
 
-  await check("map page renders markers and a popup", async () => {
-    await page.goto(BASE + "/map/?city=in/telangana/hyderabad");
-    await page.locator(".ac-marker, .ac-cluster").first().waitFor({ timeout: 15000 });
-    const n = await page.locator(".ac-marker, .ac-cluster").count();
-    expect(n > 0, "no markers");
-    const marker = page.locator(".ac-marker").first();
-    if (await marker.count()) {
-      await marker.click();
-      await page.locator(".maplibregl-popup").getByText("View event").waitFor({ timeout: 5000 });
-    }
-    await shot("map");
-  });
+  await page.goto(url("/calendar")); await settle();
+  check(await page.getByRole("heading", { name: /October 2026|November 2026/ }).isVisible(), "calendar month heading");
+  await page.getByRole("button", { name: "Next month" }).click(); await settle();
+  await page.getByRole("button", { name: "Next month" }).click(); await settle();
+  check(await page.getByRole("heading", { name: /December 2026|January 2027/ }).isVisible(), "calendar navigates months");
+  await shot("calendar");
 
-  await check("event page: register link, details, travel info, calendar", async () => {
-    await page.goto(BASE + "/events/madhapur-open-badminton-championship-demo/");
-    const reg = page.getByRole("link", { name: /Register/ }).first();
-    expect((await reg.getAttribute("href")) === "https://example.com/register", "register href");
-    expect(await page.getByText("Demo event.").count() === 1, "demo banner missing");
-    await page.getByText("How far is it?").waitFor();
-    expect(await page.getByText(/straight-line/).count() > 0, "no straight-line distance");
-    expect(await page.getByRole("link", { name: /Google Calendar/ }).count() === 1, "calendar link missing");
-    expect(await page.getByRole("cell", { name: "Mixed Doubles Open" }).count() === 1, "categories table missing");
-    await shot("event");
-  });
+  await page.goto(url("/map")); await page.waitForTimeout(2500);
+  const markers = await page.locator(".rc-marker").count();
+  check(markers >= 5, `map markers (${markers})`);
+  check(await page.getByText(/Venue not announced yet/).isVisible(), "map lists runs without a venue");
+  await page.locator(".rc-marker").first().click({ force: true }); await settle();
+  check(await page.locator(".rc-pop").isVisible(), "marker popup");
+  await shot("map");
 
-  await check("cancelled event shows a notice", async () => {
-    await page.goto(BASE + "/events/manikonda-5-a-side-futsal-night-demo/");
-    await page.getByText(/This event has been cancelled/).waitFor();
-  });
+  await page.goto(url("/runs/hitech-marathon-2026")); await page.waitForTimeout(1500);
+  check(await page.getByRole("heading", { name: "Hitech Marathon" }).isVisible(), "run page heading");
+  check(await page.getByText("Sunday, 1 November 2026").first().isVisible(), "run page date");
+  check(await page.getByText(/not the exact start point/).isVisible(), "area pin is labelled approximate");
+  check((await page.getByText("Not announced yet").count()) >= 2, "unknown details say not announced");
+  check(await page.getByRole("link", { name: "Google Calendar" }).isVisible(), "add to calendar");
+  check(await page.getByText(/straight-line/).first().isVisible(), "distance from you");
+  await shot("run");
+  await page.getByRole("link", { name: "Runs", exact: true }).first().click(); await page.waitForLoadState(); await settle();
+  check(/^\/(\?|$)/.test(pathOf(page.url())), `breadcrumb back to runs (${pathOf(page.url())})`);
 
-  await check("unverified events are never published", async () => {
-    const r = await page.goto(BASE + "/events/gachibowli-running-clinic-submission-demo/");
-    expect(r.status() === 404, `status ${r.status()}`);
-  });
+  await page.goto(url("/runs/premiethon-2026")); await settle();
+  check(await page.getByText(/venue not announced yet/i).first().isVisible(), "run without venue says so");
 
-  await check("calendar renders events", async () => {
-    await page.goto(BASE + "/calendar/");
-    await page.getByRole("group", { name: "Calendar view" }).waitFor();
-    await page.getByRole("button", { name: "list" }).click();
-    await page.locator("main a[href^='/events/']").first().waitFor();
-    await shot("calendar");
-  });
+  await page.goto(url("/add-a-run")); await settle();
+  check(await page.getByLabel("Name of the run").isVisible(), "add a run form");
 
-  await check("city and sport-in-city pages", async () => {
-    await page.goto(BASE + "/in/telangana/hyderabad/");
-    expect(/Sports events in Hyderabad/.test(await page.locator("h1").innerText()), "city h1");
-    await page.goto(BASE + "/in/telangana/hyderabad/running/");
-    expect(/Running events and marathons in Hyderabad/.test(await page.locator("h1").innerText()), "city sport h1");
-    expect(await page.locator("script[type='application/ld+json']").count() >= 1, "breadcrumb schema");
-  });
-
-  await check("entry helper validates and outputs JSON", async () => {
-    await page.goto(BASE + "/tools/event-builder/");
-    await page.getByLabel("Event name *").fill("Test Run");
-    expect(await page.getByText("Not ready yet:").count() === 1, "validation not shown");
-  });
-
-  expect(errors.length === 0, "");
-  if (errors.length) { failures++; console.log("✗ console errors:\n    " + errors.slice(0, 5).join("\n    ")); } else console.log("✓ no console errors");
-  await ctx.close();
+  check(errors.length === 0, `no console errors${errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""}`);
+  await browser.close();
 }
-await browser.close();
-console.log(failures ? `\n${failures} failing` : "\nall passed");
-process.exit(failures ? 1 : 0);
+
+await run("desktop", { viewport: { width: 1366, height: 900 } });
+await run("mobile", { ...devices["Pixel 7"] });
+console.log(failed ? `\n${failed} failed` : "\nall passed");
+process.exit(failed ? 1 : 0);
