@@ -1,8 +1,8 @@
 // Supabase Edge Function: emails the organizer when an event is submitted or changes status.
 // Wire it with a Database Webhook on INSERT into public.status_history and public.events.
 // Provider is configurable with secrets (never in frontend code):
-//   EMAIL_PROVIDER = brevo | resend      EMAIL_API_KEY = ...      EMAIL_FROM = "AthletCircle <events@athletcircle.in>"
-//   SITE_URL = https://athletcircle.in
+//   EMAIL_PROVIDER = brevo | resend      EMAIL_API_KEY = ...      EMAIL_FROM = "AthletCircle <events@athletcircle.com>"
+//   SITE_URL = https://athletcircle.com
 // Free tiers: Brevo 300 emails/day, Resend 3,000/month (100/day).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -20,7 +20,7 @@ const TEMPLATES: Record<string, (t: string, extra: { reason?: string; url?: stri
 async function send(to: string, subject: string, text: string) {
   const provider = Deno.env.get("EMAIL_PROVIDER") ?? "brevo";
   const key = Deno.env.get("EMAIL_API_KEY")!;
-  const from = Deno.env.get("EMAIL_FROM") ?? "AthletCircle <events@athletcircle.in>";
+  const from = Deno.env.get("EMAIL_FROM") ?? "AthletCircle <events@athletcircle.com>";
   const m = from.match(/^(.*)<(.+)>$/);
   const res = provider === "resend"
     ? await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to, subject, text }) })
