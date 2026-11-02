@@ -14,7 +14,7 @@ export function Footer() {
           <p className="muted mt-1 text-sm">Starting with running events in Hyderabad. More sports and cities soon.</p>
         </div>
         <nav aria-label="Explore"><h2>Explore</h2><ul className="grid gap-2 text-sm">
-          <li><Link href="/#upcoming">Discover Events</Link></li><li><Link href="/#nearby">Events Near Me</Link></li><li><Link href="/cities">Cities</Link></li></ul></nav>
+          <li><Link href="/#upcoming">Discover Events</Link></li><li><Link href="/#nearby">Events Near Me</Link></li><li><Link href="/cities">Cities</Link></li><li><Link href="/hyderabad/marathons">Marathons in Hyderabad</Link></li><li><Link href="/hyderabad/half-marathons">Half marathons</Link></li><li><Link href="/hyderabad/10k-runs">10K runs</Link></li><li><Link href="/hyderabad/5k-runs">5K runs</Link></li><li><Link href="/hyderabad/trail-runs">Trail &amp; ultra</Link></li></ul></nav>
         <nav aria-label="Organizers"><h2>Organizers</h2><ul className="grid gap-2 text-sm">
           <li><Link href="/submit">Submit an Event</Link></li><li><Link href="/about">About Us</Link></li><li><a href={`mailto:${SITE.contactEmail}`}>Contact</a></li></ul></nav>
         <nav aria-label="Legal"><h2>Legal</h2><ul className="grid gap-2 text-sm">

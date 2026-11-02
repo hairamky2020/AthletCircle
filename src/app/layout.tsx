@@ -11,8 +11,9 @@ const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: "AthletCircle · Discover. Participate. Achieve.", template: "%s · AthletCircle" },
-  description: "Discover sporting events, explore opportunities near you and connect with the sporting community. Discover. Participate. Achieve.",
+  title: { default: "Running Events & Marathons in Hyderabad 2026–27 · AthletCircle", template: "%s · AthletCircle" },
+  description: "Find running events and marathons in Hyderabad: 5K, 10K, half marathons, trail and ultra runs with dates, venues, fees and official registration links.",
+  keywords: ["running events in Hyderabad", "marathons in Hyderabad", "half marathon Hyderabad", "10K run Hyderabad", "5K run Hyderabad", "Hyderabad runs 2026"],
   openGraph: { siteName: "AthletCircle", type: "website", locale: "en_IN" },
   twitter: { card: "summary_large_image" },
 };
