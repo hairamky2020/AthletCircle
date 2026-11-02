@@ -428,3 +428,37 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 .about a.ab-btn-ghost { color: #FFFFFF !important; }
 .about p.tagline-dark { color: var(--color-orange) !important; }
 @media (min-width: 640px) { .ab-collage .ab-tile { min-height: 190px; } }
+
+/* ---------- Ad: OurTemples.Info (animated, CSS only) ---------- */
+@layer components {
+.ad-temple { position: relative; overflow: hidden; padding: 0 !important; border-style: solid !important; border-color: #F3D9B1 !important;
+  background: linear-gradient(110deg, #FFF7EC 0%, #FFE9CC 45%, #FFF7EC 100%) !important; background-size: 200% 100% !important; }
+.ad-temple .ad-label { position: absolute; left: 14px; top: 10px; z-index: 1; }
+.at-link { display: flex; align-items: center; gap: 20px; padding: 18px 24px; color: #5A1E0E; text-decoration: none; flex-wrap: wrap; justify-content: center; }
+.at-art { width: 150px; height: auto; flex-shrink: 0; }
+.at-sun { fill: #FFB547; opacity: .35; transform-origin: 110px 70px; }
+.at-temple path, .at-temple circle { fill: #B4441B; } .at-temple .at-door { fill: #FFE9CC; }
+.at-bell { fill: #D97706; stroke: #D97706; stroke-width: 2; transform-origin: 188px 30px; }
+.at-diya ellipse { fill: #B4441B; } .at-flame { fill: #FF8A00; transform-origin: 34px 46px; }
+.at-copy { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+@media (min-width: 720px) { .at-copy { text-align: left; } .at-link { flex-wrap: nowrap; } }
+.at-q { font-size: clamp(18px, 2.2vw, 24px); font-weight: 800; color: #5A1E0E; }
+.at-brand { font-size: 16px; color: #7A3418; } .at-brand strong { font-weight: 800; color: #B4441B; }
+.at-cta { margin-left: auto; white-space: nowrap; background: #B4441B; color: #FFFFFF; font-weight: 800; font-size: 14px; border-radius: 999px; padding: 10px 18px; transition: transform .15s; }
+@media (max-width: 719px) { .at-cta { margin-left: 0; } }
+.at-link:hover .at-cta { transform: translateX(3px); }
+.at-link:focus-visible { outline: 3px solid var(--color-blue); outline-offset: -3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .ad-temple { animation: at-shine 8s linear infinite; }
+  .at-sun { animation: at-glow 3.5s ease-in-out infinite; }
+  .at-bell { animation: at-swing 2.4s ease-in-out infinite; }
+  .at-flame { animation: at-flicker 1.2s ease-in-out infinite; }
+  .at-q { animation: at-rise .8s ease both; } .at-brand { animation: at-rise .8s .4s ease both; } .at-cta { animation: at-pulse 2.4s 1.2s ease-in-out infinite; }
+}
+@keyframes at-shine { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes at-glow { 50% { transform: scale(1.12); opacity: .55; } }
+@keyframes at-swing { 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+@keyframes at-flicker { 50% { transform: scale(.85, 1.15); } }
+@keyframes at-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes at-pulse { 50% { box-shadow: 0 0 0 6px rgb(180 68 27 / .18); } }
+}
