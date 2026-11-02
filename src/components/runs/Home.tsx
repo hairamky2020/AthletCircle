@@ -141,6 +141,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
       <section className="hero3">
         <div className="wrap hero3-inner">
           <div>
+            <p className="tagline mb-3">Discover. Participate. Achieve.</p>
             <h1>Every Sport. Every Athlete. <span className="text-blue">One Circle.</span></h1>
             <p className="hero3-sub">Discover sporting events, explore opportunities near you and connect with the sporting community.</p>
             <form className="searchbar" role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>
@@ -158,11 +159,6 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
             </form>
             {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "event matches" : "events match"} “{f.q.trim()}” · <a href="#upcoming">see results ↓</a></> : <>No upcoming events match “{f.q.trim()}”.</>}</p>}
             <p className="mt-3 text-sm text-muted">City: <b className="text-navy">{SCOPE.cityName}</b> · {upcoming.length} upcoming events, each checked by our team.</p>
-          </div>
-          <div className="sport-mosaic" aria-hidden>
-            {SPORT_LIST.map((s) => (
-              <div key={s.slug} className="sport-tile" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}><SportIcon sport={s.slug} /><span>{s.name}</span></div>
-            ))}
           </div>
         </div>
       </section>

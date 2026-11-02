@@ -11,7 +11,7 @@ const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: "AthletCircle · Every Sport. Every Athlete. One Circle.", template: "%s · AthletCircle" },
+  title: { default: "AthletCircle · Discover. Participate. Achieve.", template: "%s · AthletCircle" },
   description: "Discover sporting events, explore opportunities near you and connect with the sporting community. Discover. Participate. Achieve.",
   openGraph: { siteName: "AthletCircle", type: "website", locale: "en_IN" },
   twitter: { card: "summary_large_image" },

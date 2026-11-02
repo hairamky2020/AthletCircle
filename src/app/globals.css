@@ -111,6 +111,20 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 }
 
 @layer components {
+.tagline { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--color-navy); }
+.tagline::before { content: ""; width: 22px; height: 2px; background: var(--color-blue); }
+/* ---------- Sports bar (one line under the menu) ---------- */
+.sport-bar { border-top: 1px solid var(--color-border); background: var(--color-white); }
+.sport-bar ul { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
+.sport-bar ul::-webkit-scrollbar { display: none; }
+@media (min-width: 1100px) { .sport-bar ul { justify-content: space-between; } }
+.sb-item { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; min-height: 40px; border-radius: 999px; padding: 4px 12px 4px 4px; font-size: 14px; font-weight: 600; color: var(--color-navy); border: 1px solid transparent; }
+.sb-ic { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: var(--sport); background: color-mix(in srgb, var(--sport) 12%, white); }
+.sb-ic svg { width: 18px; height: 18px; }
+.sb-item small { font-size: 11px; font-weight: 600; color: var(--color-muted); }
+.sb-item.is-live { border-color: var(--sport); }
+.sb-item.is-live:hover { background: color-mix(in srgb, var(--sport) 8%, white); }
+.sb-item.is-soon { cursor: default; color: var(--color-text-2); opacity: .75; }
 /* ---------- Header ---------- */
 .site-header { position: sticky; top: 0; z-index: 1000; background: var(--color-white); border-bottom: 1px solid var(--color-border); }
 .site-nav a { color: var(--color-navy); font-size: 14px; font-weight: 600; padding: 6px 2px; border-bottom: 2px solid transparent; }
@@ -132,7 +146,7 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 /* ---------- Home ---------- */
 .hero3 { background: var(--color-white); border-bottom: 1px solid var(--color-border); }
 .hero3-inner { display: grid; gap: 32px; align-items: center; padding-top: 36px; padding-bottom: 36px; }
-@media (min-width: 960px) { .hero3-inner { grid-template-columns: 1.1fr .9fr; padding-top: 64px; padding-bottom: 56px; } }
+@media (min-width: 960px) { .hero3-inner { grid-template-columns: minmax(0, 760px); padding-top: 64px; padding-bottom: 56px; } }
 .hero3-sub { margin-top: 14px; font-size: 17px; color: var(--color-text-2); max-width: 34rem; }
 .sport-mosaic { display: none; }
 @media (min-width: 960px) { .sport-mosaic { display: grid; } }

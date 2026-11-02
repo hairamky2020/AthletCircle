@@ -73,7 +73,8 @@ export default async function RunPage({ params }: Params) {
         </p>
       )}
 
-      <header className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
+      <p className="tagline mt-6">Discover. Participate. Achieve.</p>
+      <header className="mt-3 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
         <DateBlock date={run.date} size="lg" />
         <div className="min-w-0">
           {run.featured && <p className="eyebrow !text-brand-600">Featured</p>}

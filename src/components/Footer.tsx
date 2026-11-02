@@ -9,7 +9,8 @@ export function Footer() {
       <div className="wrap grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <LogoReversed height={64} />
-          <p className="mt-4 font-semibold">Every Sport. Every Athlete. One Circle.</p>
+          <p className="mt-4 text-lg font-bold">Discover. Participate. Achieve.</p>
+          <p className="muted text-sm">Every Sport. Every Athlete. One Circle.</p>
           <p className="muted mt-1 text-sm">Starting with running events in Hyderabad. More sports and cities soon.</p>
         </div>
         <nav aria-label="Explore"><h2>Explore</h2><ul className="grid gap-2 text-sm">
