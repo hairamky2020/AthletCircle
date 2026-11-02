@@ -7,8 +7,7 @@ import { getSport, rootSport } from "@/data/sports";
 import type { Run } from "@/data/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { Tracker } from "@/components/Tracker";
-import { PlacePhoto } from "@/components/runs/PlacePhoto";
-import { photoFor } from "@/lib/images";
+import { RunArt } from "@/components/RunArt";
 import { AddToCalendar } from "@/components/runs/AddToCalendar";
 import { RegisterToggle } from "@/components/runs/RegisterToggle";
 import { DistanceFromYou } from "@/components/runs/DistanceFromYou";
@@ -141,7 +140,7 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
             </div>
             <div className="ed-banner">
               <div className="ed-banner-date"><b>{day.day}</b><span>{day.month}</span></div>
-              <PlacePhoto photo={photoFor(run)} />
+              <RunArt run={run} className="ed-art" />
             </div>
           </div>
           <Tracker slug={run.slug} />

@@ -4,12 +4,11 @@ import Link from "next/link";
 import type { Run } from "@/data/schema";
 import { useMyRuns } from "@/lib/myRuns";
 import { sportColour } from "@/lib/brand";
-import { photoFor } from "@/lib/images";
+import { RunArt } from "./RunArt";
 import { formatDistance } from "@/lib/geo";
 import { dayParts, placeLabel, relativeDay, runHref } from "@/lib/runs";
 import { getSport } from "@/data/sports";
 import { getPlace } from "@/data/locations";
-import { SportIcon } from "./SportIcon";
 
 const NA = <span className="na">Not Announced</span>;
 
@@ -18,7 +17,6 @@ export function EventCard({ run, now, away, featured = false }: { run: Run; now:
   const d = dayParts(run.date);
   const sport = getSport(run.sport)?.name ?? run.sport;
   const city = getPlace(run.city)?.name ?? "";
-  const photo = photoFor(run, 700);
   const { has, toggle } = useMyRuns();
   const on = has(run.slug);
   const status = run.status !== "scheduled"
@@ -29,11 +27,7 @@ export function EventCard({ run, now, away, featured = false }: { run: Run; now:
   return (
     <article className="ev-card" style={{ "--sport": sportColour(run.sport) } as React.CSSProperties}>
       <div className="ev-banner">
-        {!photo.generic && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo.src} alt={photo.caption} loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
-        )}
-        {photo.generic && <SportIcon sport={run.sport} className="ev-banner-ic" />}
+        <RunArt run={run} className="ev-art" />
         <span className="ev-date" aria-label={`${d.weekday} ${d.day} ${d.month} ${d.year}`}><b>{d.day}</b><span>{d.month}</span></span>
         <span className="ev-sport">{sport}</span>
         {featured && <span className="ev-feat">Featured</span>}
