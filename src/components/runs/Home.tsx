@@ -154,12 +154,6 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
       </section>
 
       {/* 2. Featured: swipeable poster cards */}
-      {/* Map of the runs that match, right under the search (free OpenStreetMap tiles) */}
-      <section className="wrap mt-6" aria-label="Map of runs">
-        <LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[300px] md:h-[360px]" />
-        <p className="mt-2 text-xs text-ink-500">{shown.filter((r) => r.location).length} of {shown.length} runs on the map. Pins show the area, not the exact start line.</p>
-      </section>
-
       {!filtered && featured.length > 0 && (
         <section className="wrap mt-8" aria-label="Featured runs">
           <h2 className="h2-small">Featured</h2>
@@ -168,6 +162,12 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           </ul>
         </section>
       )}
+
+      {/* Map of the runs that match, right under the search (free OpenStreetMap tiles) */}
+      <section className="wrap mt-8" aria-label="Map of runs">
+        <LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[300px] md:h-[360px]" />
+        <p className="mt-2 text-xs text-ink-500">{shown.filter((r) => r.location).length} of {shown.length} runs on the map. Pins show the area, not the exact start line.</p>
+      </section>
 
       {/* 3. Results: quick filters + one view at a time */}
       <section id="upcoming" className="wrap mt-10 scroll-mt-20" aria-label="Runs">
