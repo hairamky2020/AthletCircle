@@ -15,8 +15,10 @@
     "build:offline": "next build && node scripts/make-offline.mjs"
   },
   "dependencies": {
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@supabase/supabase-js": "^2.118.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.24.0",
     "next": "15.5.4",
     "papaparse": "^5.5.3",
     "react": "19.1.0",

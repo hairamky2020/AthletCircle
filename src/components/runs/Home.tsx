@@ -12,7 +12,7 @@ import { CalendarGrid } from "./CalendarGrid";
 import { EventCard } from "@/components/EventCard";
 import { SportIcon, SPORT_LIST } from "@/components/SportIcon";
 import { sportColour } from "@/lib/brand";
-import { SCOPE } from "@/data/events";
+import { SCOPE, listingHref } from "@/data/events";
 import { AdSlot } from "./AdSlot";
 
 /*
@@ -191,9 +191,15 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
             const n = countBySport(s.slug);
             return (
               <li key={s.slug}>
-                <a href={n ? "#upcoming" : undefined} aria-disabled={!n} className="sport-card" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
-                  <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>{n ? `${n} events` : "Coming soon"}</small>
-                </a>
+                {n ? (
+                  <Link href={listingHref()} className="sport-card is-live" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
+                    <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>{n} events</small>
+                  </Link>
+                ) : (
+                  <div className="sport-card is-soon" aria-label={`${s.name}: coming soon`} style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
+                    <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>Coming soon</small>
+                  </div>
+                )}
               </li>
             );
           })}

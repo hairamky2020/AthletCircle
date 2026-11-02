@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
+import "@maplibre/maplibre-gl-leaflet";
 import type { Run } from "@/data/schema";
 import { SITE } from "@/lib/site";
 import { sportColour } from "@/lib/brand";
@@ -31,7 +33,7 @@ function groupByPlace(runs: Run[]) {
   return [...groups.values()];
 }
 
-/** Event map on Leaflet + OpenStreetMap tiles (free, no API key). Markers use each sport's accent colour. */
+/** Event map on Leaflet with free OpenFreeMap tiles (OpenStreetMap data, no API key). Markers use each sport's accent colour. */
 export function RunMap({ runs, origin, className, zoom = 12 }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -43,7 +45,11 @@ export function RunMap({ runs, origin, className, zoom = 12 }: Props) {
   useEffect(() => {
     if (!el.current) return;
     const map = L.map(el.current, { center: [17.385, 78.4867], zoom: 10, scrollWheelZoom: false, zoomControl: true });
-    L.tileLayer(SITE.tileUrl, { maxZoom: 19, attribution: SITE.tileAttribution }).addTo(map);
+    // OpenFreeMap vector tiles (free, no key) rendered by MapLibre inside Leaflet.
+    (L as unknown as { maplibreGL: (o: object) => L.Layer }).maplibreGL({
+      style: SITE.mapStyle,
+      attribution: '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    }).addTo(map);
     layer.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };

@@ -166,7 +166,8 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 @media (min-width: 768px) { .sports-grid { grid-template-columns: repeat(5, 1fr); } }
 @media (min-width: 1100px) { .sports-grid { grid-template-columns: repeat(9, 1fr); } }
 .sport-card { display: grid; justify-items: center; gap: 8px; padding: 16px 8px; border-radius: var(--radius-card); background: var(--color-white); border: 1px solid var(--color-border); text-align: center; font-size: 14px; font-weight: 700; color: var(--color-navy); transition: box-shadow .15s, border-color .15s; }
-.sport-card:hover { box-shadow: var(--shadow-hover); border-color: var(--sport); }
+.sport-card.is-live:hover { box-shadow: var(--shadow-hover); border-color: var(--sport); }
+.sport-card.is-soon { cursor: default; opacity: .6; box-shadow: none; }
 .sport-card .sport-ic { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; color: var(--sport); background: color-mix(in srgb, var(--sport) 10%, white); }
 .sport-card .sport-ic svg { width: 26px; height: 26px; }
 .sport-card small { font-size: 12px; font-weight: 500; color: var(--color-muted); }
@@ -255,7 +256,6 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 
 /* ---------- Map (Leaflet) ---------- */
 .leaflet-container { font-family: var(--font-sans); background: var(--color-bg); }
-.leaflet-tile-pane { filter: saturate(.55) brightness(1.04); }   /* calmer, lighter OSM base */
 .rc-marker { min-width: 26px; height: 26px; padding: 0 6px; border-radius: 999px; background: var(--mk, var(--color-blue)); color: var(--color-white); border: 3px solid var(--color-white); box-shadow: 0 2px 6px rgba(16, 40, 75, .35); font: 800 12px/20px var(--font-sans); cursor: pointer; }
 .rc-you { width: 22px; height: 22px; border-radius: 999px; background: rgba(8, 102, 233, .2); display: grid; place-items: center; }
 .rc-you::after { content: ""; width: 12px; height: 12px; border-radius: 999px; background: var(--color-blue); border: 2px solid var(--color-white); }
