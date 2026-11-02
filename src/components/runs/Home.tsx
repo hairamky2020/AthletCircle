@@ -158,8 +158,18 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
               <button className="btn-primary" type="submit">Search</button>
             </form>
             {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "event matches" : "events match"} “{f.q.trim()}” · <a href="#upcoming">see results ↓</a></> : <>No upcoming events match “{f.q.trim()}”.</>}</p>}
+            <div className="hero-quick" aria-label="Quick picks">
+              <button type="button" className="quick-chip" onClick={() => { update({ when: "weekend" }); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>This weekend</button>
+              <a className="quick-chip" href="#nearby">Near me</a>
+              <a className="quick-chip" href="#map">On the map</a>
+            </div>
             <p className="mt-3 text-sm text-muted">City: <b className="text-navy">{SCOPE.cityName}</b> · {upcoming.length} upcoming events, each checked by our team.</p>
           </div>
+          <svg className="hero-rings" viewBox="0 0 380 320" aria-hidden="true">
+            <circle cx="140" cy="130" r="100" stroke="#FF8A00" />
+            <circle cx="245" cy="150" r="92" stroke="#0866E9" />
+            <circle cx="185" cy="215" r="76" stroke="#36B900" />
+          </svg>
         </div>
       </section>
 

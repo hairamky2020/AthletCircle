@@ -462,3 +462,29 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 @keyframes at-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes at-pulse { 50% { box-shadow: 0 0 0 6px rgb(180 68 27 / .18); } }
 }
+
+/* ---------- Circle Energy (Option B) — overrides Bold Navy ---------- */
+@layer components {
+.hero3 { background: var(--color-white); border-bottom: 1px solid var(--color-border); position: relative; overflow: hidden; }
+.hero3 h1 { color: var(--color-navy); }
+.hero3 .hero3-sub { color: var(--color-text-2); }
+.hero3 .tagline, .tagline-dark { color: var(--color-success); }
+.hero3 .tagline::before, .tagline-dark::before { background: var(--color-green); }
+.hero3 .searchbar { border: 1px solid var(--color-border); box-shadow: 0 12px 30px rgb(16 40 75 / .10); }
+@media (min-width: 960px) { .hero3-inner { grid-template-columns: minmax(0, 680px) 1fr; } }
+.hero-rings { display: none; width: 100%; max-width: 380px; justify-self: end; }
+@media (min-width: 960px) { .hero-rings { display: block; } }
+.hero-rings circle { fill: none; stroke-width: 18; opacity: .9; transform-origin: center; transform-box: fill-box; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-rings circle { animation: ring-float 6s ease-in-out infinite; }
+  .hero-rings circle:nth-child(2) { animation-delay: -2s; } .hero-rings circle:nth-child(3) { animation-delay: -4s; }
+}
+@keyframes ring-float { 50% { transform: translateY(-8px) scale(1.02); } }
+.hero-quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.quick-chip { display: inline-flex; align-items: center; min-height: 36px; border-radius: 999px; padding: 6px 14px; background: var(--color-bg-blue); color: var(--color-blue); font-size: 13px; font-weight: 700; transition: background .15s; }
+.quick-chip:hover { background: #DCEAFF; }
+.ev-hero-top { background: var(--color-white); border-left: 8px solid var(--color-orange); position: relative; overflow: hidden; }
+.ev-hero-top::after { content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 999px; border: 16px solid var(--color-bg-blue); box-shadow: 40px 60px 0 -16px transparent; pointer-events: none; }
+.ev-hero-top > * { position: relative; z-index: 1; }
+}
+.ev-hero-feat { margin-left: 10px; vertical-align: middle; }

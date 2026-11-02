@@ -79,8 +79,8 @@ export default async function RunPage({ params }: Params) {
           <div className="min-w-0">
             <p className="tagline tagline-dark">Discover. Participate. Achieve.</p>
             {run.featured && <p className="ev-hero-feat">Featured</p>}
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">{run.title}</h1>
-            <p className="mt-2 text-lg text-white/85">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
+            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-navy md:text-5xl">{run.title}</h1>
+            <p className="mt-2 text-lg text-text-2">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
           </div>
           <PlacePhoto photo={photoFor(run)} className="md:ml-auto" />
         </div>
