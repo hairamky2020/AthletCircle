@@ -31,37 +31,40 @@ async function run(label, ctxOpts) {
   const settle = () => page.waitForTimeout(700);
 
   await page.goto(url("/")); await settle();
-  check(await page.getByRole("heading", { name: /Find your next run/ }).isVisible(), "home: hero");
-  check((await page.locator(".featured-strip .poster").count()) >= 3, "home: featured cards");
+  check(await page.getByRole("heading", { name: /Every Sport. Every Athlete/ }).isVisible(), "home: brand hero");
+  check(await page.locator('header img[alt="AthletCircle"]:visible').count() === 1, "home: approved logo in header");
+  check((await page.locator(".featured-strip .ev-card").count()) >= 3, "home: featured carousel");
+  check((await page.locator(".sports-grid .sport-card").count()) === 9, "home: explore sports (9)");
   check((await page.locator(".ad-slot").count()) === 1, "home: one ad space");
-  const cards = () => page.locator("#upcoming a.run-card2");
-  check((await cards().count()) >= 10, `run cards (${await cards().count()})`);
+  const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+  check(/manrope/i.test(font), `Manrope font (${font.slice(0, 40)})`);
+  const cards = () => page.locator("#upcoming .ev-card");
+  check((await cards().count()) >= 10, `event cards (${await cards().count()})`);
+  check((await cards().first().getByText("Not Announced").count()) >= 2, "card shows fee/prize Not Announced");
   check(!(await page.content()).includes("Demo"), "no demo data");
   await shot("home");
 
-  await page.getByRole("button", { name: "Next 30 days" }).click(); await settle();
+  await page.locator("#upcoming").getByRole("button", { name: "Next 30 days" }).click(); await settle();
   const n30 = await cards().count();
   check(n30 > 0 && n30 < 13 && page.url().includes("when=month"), `when filter (${n30})`);
-  await page.getByRole("button", { name: "Any time" }).click(); await settle();
+  await page.locator("#upcoming").getByRole("button", { name: "Any time" }).click(); await settle();
   await page.getByRole("group", { name: "Distance or type" }).getByRole("button", { name: /^Ultra Run/ }).click(); await settle();
-  check((await cards().count()) >= 1 && (await cards().first().textContent()).includes("Ultra"), "type filter");
+  check((await cards().count()) >= 1 && (await cards().first().textContent()).includes("Ultra"), "category filter");
   await page.getByRole("button", { name: "All categories" }).click(); await settle();
   await page.getByLabel("Search runs or areas").fill("gachibowli"); await settle();
   const g = await cards().count();
   check(g >= 1 && (await cards().allTextContents()).every((t) => /Gachibowli/.test(t)), `search (${g})`);
   await page.getByLabel("Search runs or areas").fill("iit half"); await settle();
-  check((await cards().count()) === 1 && await page.getByText(/1 run matches/).isVisible(), "multi-word search narrows to one");
-  check((await page.locator(".featured-strip").count()) === 0, "featured hides while searching");
+  check((await cards().count()) === 1 && await page.getByText(/1 event matches/).isVisible(), "multi-word search narrows to one");
   await page.getByLabel("Search runs or areas").fill(""); await settle();
-  await page.getByText("Completed runs").click(); await settle();
-  check((await page.locator("#past li").count()) >= 1, "completed runs section");
+  await page.getByText("Completed events").click(); await settle();
+  check((await page.locator("#past li").count()) >= 1, "completed events section");
 
-  await page.getByRole("button", { name: "Near me" }).click(); await page.waitForTimeout(1200);
-  check(await page.getByText(/nearest first, straight-line/).isVisible(), "near me sorts nearest first");
-  const firstRun = await cards().first().locator(".rc-title").textContent();
-  check(/Signathon|Hitech|Rehabathon|Sankalp/.test(firstRun ?? ""), `nearest first is a Gachibowli run (${firstRun?.trim()})`);
-  check(await cards().first().getByText(/KM|M$/).first().isVisible(), "cards show distance");
-  await page.getByRole("button", { name: /Near / }).click(); await settle();
+  await page.getByRole("button", { name: "Use my location" }).click(); await page.waitForTimeout(1200);
+  const near = page.locator("#nearby .ev-card");
+  check((await near.count()) === 3, "events near you shows 3");
+  check(/Signathon|Hitech|Rehabathon|Sankalp/.test(await near.first().locator(".ev-title").textContent()), "nearest is a Gachibowli run");
+  check(await near.first().getByText(/straight-line/).isVisible(), "distance labelled straight-line");
 
   // Saved
   await cards().nth(0).getByRole("button", { name: /^Save/ }).click();
@@ -75,10 +78,10 @@ async function run(label, ctxOpts) {
   await page.getByRole("button", { name: "Next month" }).click(); await settle();
   check(/November|December|January/.test(await page.locator(".cal-poster-month").textContent()), "calendar view navigates months");
 
-  await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(2500);
+  await page.locator("#map").scrollIntoViewIfNeeded(); await page.waitForTimeout(2500);
   const markers = await page.locator(".rc-marker").count();
   check(markers >= 3, `map markers (${markers})`);
-  await page.locator(".rc-marker").first().evaluate((el) => el.scrollIntoView({ block: "center" })); await settle();
+  check(await page.locator(".leaflet-container").count() === 1, "Leaflet map");
   await page.locator(".rc-marker").first().click({ force: true }); await settle();
   check(await page.locator(".rc-pop").isVisible(), "marker popup");
   await shot("map");

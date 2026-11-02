@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
-    "maplibre-gl": "^5.7.0",
+    "leaflet": "^1.9.4",
     "next": "15.5.4",
     "papaparse": "^5.5.3",
     "react": "19.1.0",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "1.9",
     "@types/node": "^20",
     "@types/papaparse": "^5.3.16",
     "@types/react": "^19",

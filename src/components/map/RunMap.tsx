@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibregl, { type Map as MLMap } from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type { Run } from "@/data/schema";
 import { SITE } from "@/lib/site";
+import { sportColour } from "@/lib/brand";
 import { formatDistance, haversineMetres, directionsUrl, type LatLng } from "@/lib/geo";
 import { formatShort, runHref, placeLabel } from "@/lib/runs";
 
@@ -30,51 +31,42 @@ function groupByPlace(runs: Run[]) {
   return [...groups.values()];
 }
 
-/** Map of runs on MapLibre GL with free OpenStreetMap vector tiles (OpenFreeMap). */
+/** Event map on Leaflet + OpenStreetMap tiles (free, no API key). Markers use each sport's accent colour. */
 export function RunMap({ runs, origin, className, zoom = 12 }: Props) {
   const el = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MLMap | null>(null);
-  const markers = useRef<maplibregl.Marker[]>([]);
-  const you = useRef<maplibregl.Marker | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const layer = useRef<L.LayerGroup | null>(null);
+  const you = useRef<L.Marker | null>(null);
   const originRef = useRef(origin);
   originRef.current = origin;
 
   useEffect(() => {
     if (!el.current) return;
-    const map = new maplibregl.Map({
-      container: el.current,
-      style: SITE.mapStyle,
-      center: [78.4867, 17.385],
-      zoom: 10,
-      attributionControl: { compact: true },
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    const map = L.map(el.current, { center: [17.385, 78.4867], zoom: 10, scrollWheelZoom: false, zoomControl: true });
+    L.tileLayer(SITE.tileUrl, { maxZoom: 19, attribution: SITE.tileAttribution }).addTo(map);
+    layer.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
-  // Markers for the current runs; refit when the set changes.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
-    markers.current.forEach((m) => m.remove());
+    if (!map || !layer.current) return;
+    layer.current.clearLayers();
     const groups = groupByPlace(runs);
-    markers.current = groups.map((g) => {
-      const node = document.createElement("button");
-      node.className = "rc-marker";
-      node.style.zIndex = "1";
-      node.textContent = g.runs.length > 1 ? String(g.runs.length) : "";
-      node.setAttribute("aria-label", g.runs.map((r) => r.title).join(", "));
-      const popup = new maplibregl.Popup({ offset: 16, maxWidth: "300px" }).setHTML(popupHtml(g.runs, originRef.current));
-      popup.on("open", () => popup.setHTML(popupHtml(g.runs, originRef.current)));
-      return new maplibregl.Marker({ element: node }).setLngLat([g.at.lng, g.at.lat]).setPopup(popup).addTo(map);
-    });
-    if (groups.length === 1) map.jumpTo({ center: [groups[0].at.lng, groups[0].at.lat], zoom });
-    else if (groups.length > 1) {
-      const b = new maplibregl.LngLatBounds();
-      groups.forEach((g) => b.extend([g.at.lng, g.at.lat]));
-      map.fitBounds(b, { padding: 56, maxZoom: 13, duration: 0 });
+    for (const g of groups) {
+      const n = g.runs.length;
+      const icon = L.divIcon({
+        className: "",
+        html: `<button class="rc-marker" style="--mk:${sportColour(g.runs[0].sport)}" aria-label="${esc(g.runs.map((r) => r.title).join(", "))}">${n > 1 ? n : ""}</button>`,
+        iconSize: [26, 26], iconAnchor: [13, 13],
+      });
+      const m = L.marker([g.at.lat, g.at.lng], { icon, zIndexOffset: 100 });
+      m.bindPopup(() => popupHtml(g.runs, originRef.current), { maxWidth: 300, className: "rc-popup" });
+      layer.current.addLayer(m);
     }
+    if (groups.length === 1) map.setView([groups[0].at.lat, groups[0].at.lng], zoom);
+    else if (groups.length > 1) map.fitBounds(L.latLngBounds(groups.map((g) => [g.at.lat, g.at.lng] as [number, number])), { padding: [40, 40], maxZoom: 13 });
   }, [runs, zoom]);
 
   useEffect(() => {
@@ -83,15 +75,14 @@ export function RunMap({ runs, origin, className, zoom = 12 }: Props) {
     you.current?.remove();
     you.current = null;
     if (origin) {
-      const node = document.createElement("div");
-      node.className = "rc-you";
-      node.style.zIndex = "0"; // run pins stay clickable above it
-      node.title = "Your chosen location (approximate)";
-      you.current = new maplibregl.Marker({ element: node }).setLngLat([origin.lng, origin.lat]).addTo(map);
+      you.current = L.marker([origin.lat, origin.lng], {
+        icon: L.divIcon({ className: "", html: `<div class="rc-you" title="Your location (approximate)"></div>`, iconSize: [22, 22], iconAnchor: [11, 11] }),
+        zIndexOffset: -100, interactive: false, keyboard: false,
+      }).addTo(map);
     }
   }, [origin?.lat, origin?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div ref={el} className={className ?? "h-[420px] w-full"} role="region" aria-label="Map of runs" />;
+  return <div ref={el} className={className ?? "h-[420px] w-full"} role="region" aria-label="Map of events" />;
 }
 
 function popupHtml(runs: Run[], origin?: LatLng | null) {

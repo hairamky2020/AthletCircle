@@ -1,22 +1,25 @@
 import Link from "next/link";
 import { SITE } from "@/lib/site";
-import { LogoMark } from "./Logo";
+import { LogoReversed } from "./Logo";
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-line">
-      <div className="wrap flex flex-col gap-4 py-8 text-sm text-ink-500 md:flex-row md:items-center md:justify-between">
-        <p className="flex items-center gap-2"><LogoMark size={20} className="text-brand-500" /> AthletCircle · every sport, every event near you. Starting with running in Hyderabad.</p>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
-          <Link href="/about" className="hover:text-ink-900">About</Link>
-          <Link href="/submit" className="hover:text-ink-900">Submit an Event</Link>
-          <Link href="/privacy" className="hover:text-ink-900">Privacy</Link>
-          <Link href="/terms" className="hover:text-ink-900">Terms</Link>
-          <Link href="/disclaimer" className="hover:text-ink-900">Disclaimer</Link>
-          <a href={`mailto:${SITE.contactEmail}`} className="hover:text-ink-900">{SITE.contactEmail}</a>
-        </nav>
+    <footer className="site-footer">
+      <div className="footer-accent" />
+      <div className="wrap grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div>
+          <LogoReversed height={64} />
+          <p className="mt-4 font-semibold">Every Sport. Every Athlete. One Circle.</p>
+          <p className="muted mt-1 text-sm">Starting with running events in Hyderabad. More sports and cities soon.</p>
+        </div>
+        <nav aria-label="Explore"><h2>Explore</h2><ul className="grid gap-2 text-sm">
+          <li><Link href="/#upcoming">Discover Events</Link></li><li><Link href="/#nearby">Events Near Me</Link></li><li><Link href="/cities">Cities</Link></li></ul></nav>
+        <nav aria-label="Organizers"><h2>Organizers</h2><ul className="grid gap-2 text-sm">
+          <li><Link href="/submit">Submit an Event</Link></li><li><Link href="/about">About Us</Link></li><li><a href={`mailto:${SITE.contactEmail}`}>Contact</a></li></ul></nav>
+        <nav aria-label="Legal"><h2>Legal</h2><ul className="grid gap-2 text-sm">
+          <li><Link href="/privacy">Privacy</Link></li><li><Link href="/terms">Terms</Link></li><li><Link href="/disclaimer">Disclaimer</Link></li></ul></nav>
       </div>
-      <p className="wrap pb-8 text-xs text-ink-400">Maps © OpenStreetMap contributors, tiles by OpenFreeMap. Distances are straight-line unless marked otherwise. Always confirm dates and details with the organiser.</p>
+      <p className="wrap muted pb-8 text-xs">© AthletCircle. Maps © OpenStreetMap contributors. Distances are straight-line unless marked otherwise. Always confirm event details with the organizer.</p>
     </footer>
   );
 }

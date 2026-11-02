@@ -38,7 +38,10 @@ return f.apply(this,arguments);};})();`;
 let pages = 0;
 for (const file of walk(dest)) {
   if (file.endsWith(".css")) {
-    writeFileSync(file, readFileSync(file, "utf8").replaceAll("url(/_next/static/", "url(../"));
+    // Fonts are inlined: browsers block font files loaded over file:// (CORS), so Manrope would not load.
+    const css = readFileSync(file, "utf8").replace(/url\(\/_next\/static\/media\/([^)]+?\.woff2)\)/g, (_, f) =>
+      `url(data:font/woff2;base64,${readFileSync(join(dest, "_next/static/media", f)).toString("base64")})`);
+    writeFileSync(file, css.replaceAll("url(/_next/static/", "url(../"));
     continue;
   }
   if (/webpack-[^/\\]+\.js$/.test(file)) {
@@ -50,6 +53,8 @@ for (const file of walk(dest)) {
   const base = depth ? "../".repeat(depth) : "./";
   let html = readFileSync(file, "utf8");
   html = html
+    .replace(/<link rel="preload" href="\/_next\/static\/media\/[^"]+\.woff2"[^>]*\/?>/g, "")
+    .replace(/:HL\[\\"\/_next\/static\/media\/[^\]]+?\.woff2\\",\\"font\\",\{[^}]*\}\]\\n/g, "")
     .replace(/\b(href|src|action)="\/(?!\/)([^"]*)"/g, (_, a, p) => `${a}="${base}${mapPath(p)}"`)
     .replaceAll('\\"/_next/', `\\"${base}_next/`)
     .replace("<head>", `<head><script>window.__AC_BASE__=${JSON.stringify(base)};${runtime}</script>`);

@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Run } from "@/data/schema";
 import { useLocation } from "@/components/location/LocationProvider";
 import { LazyMap } from "@/components/map/LazyMap";
-import { formatDistance, haversineMetres, type LatLng } from "@/lib/geo";
+import { haversineMetres, type LatLng } from "@/lib/geo";
 import { useMyRuns } from "@/lib/myRuns";
-import { dayParts, groupByMonth, isPast, placeLabel, relativeDay, runHref, type Kind } from "@/lib/runs";
-import { photoFor } from "@/lib/images";
+import { dayParts, groupByMonth, isPast, placeLabel, runHref, type Kind } from "@/lib/runs";
 import { CalendarGrid } from "./CalendarGrid";
+import { EventCard } from "@/components/EventCard";
+import { SportIcon, SPORT_LIST } from "@/components/SportIcon";
+import { sportColour } from "@/lib/brand";
+import { SCOPE } from "@/data/events";
 import { AdSlot } from "./AdSlot";
 
 /*
@@ -106,16 +109,14 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const update = (patch: Partial<Filters>) => setF((cur) => { const next = { ...cur, ...patch }; writeUrl(next); return next; });
 
   const upcoming = useMemo(() => runs.filter((r) => !isPast(r, now)), [runs, now]);
+  const past = useMemo(() => runs.filter((r) => isPast(r, now)).reverse(), [runs, now]);
   const origin: LatLng | null = location ? { lat: location.lat, lng: location.lng } : null;
   const distanceOf = (r: Run) => (origin && r.location ? haversineMetres(origin, r.location) : null);
   const nearOn = f.near && !!origin;
 
   const shown = useMemo(() => {
     const words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    let list = upcoming.filter((r) =>
-      matchesWords(r, words) &&
-      inWindow(r.date, f.when, now) &&
-      (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
+    let list = upcoming.filter((r) => matchesWords(r, words) && inWindow(r.date, f.when, now) && (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
     if (nearOn) list = [...list].sort((a, b) => (distanceOf(a) ?? Infinity) - (distanceOf(b) ?? Infinity));
     return list;
   }, [upcoming, f, now, nearOn, origin?.lat, origin?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -124,71 +125,92 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const saved = runs.filter((r) => mine.has(r.slug));
   const featured = (upcoming.filter((r) => r.featured).length ? upcoming.filter((r) => r.featured) : upcoming).slice(0, 6);
   const filtered = Boolean(f.q || f.when || f.kind || f.near);
-  const past = useMemo(() => runs.filter((r) => isPast(r, now)).reverse(), [runs, now]);
+  const nearest = origin ? [...upcoming].filter((r) => r.location).sort((a, b) => distanceOf(a)! - distanceOf(b)!).slice(0, 3) : [];
+  const countBySport = (slug: string) => upcoming.filter((r) => r.sport === slug).length;
+  const strip = useRef<HTMLUListElement>(null);
+  const scrollStrip = (dir: number) => strip.current?.scrollBy({ left: dir * strip.current.clientWidth * 0.9, behavior: "smooth" });
 
   async function nearMe() {
-    if (nearOn) return update({ near: false });
     const l = origin ?? (await detect());
-    if (l) update({ near: true });
-    else openPicker();
+    if (!l) openPicker();
   }
 
   return (
     <>
-      {/* 1. Hero: one sentence, one search, one location button */}
-      <section className="hero2">
-        <div className="wrap">
-          <h1 className="hero2-title">Find your next run<span className="text-brand-500"> in Hyderabad.</span></h1>
-          <p className="hero2-sub">{upcoming.length} upcoming runs, checked by us. Free, no sign-up.</p>
-          <div className="hero2-search" role="search">
-            <svg className="ml-4 shrink-0 text-ink-400" width="18" height="18" viewBox="0 0 16 16" aria-hidden><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.6"/><path d="m11 11 3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            <input type="search" value={f.q} onChange={(e) => update({ q: e.target.value })} placeholder="Search a run or area, e.g. Gachibowli" aria-label="Search runs or areas" />
-            <button className={`near-pill ${nearOn ? "is-on" : ""}`} onClick={nearMe} disabled={detecting} aria-pressed={nearOn}>
-              <svg width="14" height="16" viewBox="0 0 12 14" aria-hidden><path d="M6 13.5S1 8.6 1 5.5a5 5 0 0 1 10 0c0 3.1-5 8-5 8Z" fill="none" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="5.5" r="1.6" fill="currentColor"/></svg>
-              {detecting ? "Finding you…" : nearOn ? `Near ${location?.label}` : "Near me"}
-            </button>
+      {/* Hero + search */}
+      <section className="hero3">
+        <div className="wrap hero3-inner">
+          <div>
+            <h1>Every Sport. Every Athlete. <span className="text-blue">One Circle.</span></h1>
+            <p className="hero3-sub">Discover sporting events, explore opportunities near you and connect with the sporting community.</p>
+            <form className="searchbar" role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>
+              <label className="sr-only" htmlFor="q">Search events</label>
+              <input id="q" type="search" className="field" value={f.q} onChange={(e) => update({ q: e.target.value })} placeholder="Search events or areas" aria-label="Search runs or areas" />
+              <label className="sr-only" htmlFor="sport">Sport</label>
+              <select id="sport" className="field" defaultValue={SCOPE.sport} aria-label="Sport">
+                {SPORT_LIST.map((s) => <option key={s.slug} value={s.slug} disabled={!countBySport(s.slug)}>{s.name}{countBySport(s.slug) ? "" : " (soon)"}</option>)}
+              </select>
+              <label className="sr-only" htmlFor="when">Date</label>
+              <select id="when" className="field" value={f.when} onChange={(e) => update({ when: e.target.value as When })} aria-label="Date">
+                {WHEN.map((w) => <option key={w.key} value={w.key}>{w.label}</option>)}
+              </select>
+              <button className="btn-primary" type="submit">Search</button>
+            </form>
+            {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "event matches" : "events match"} “{f.q.trim()}” · <a href="#upcoming">see results ↓</a></> : <>No upcoming events match “{f.q.trim()}”.</>}</p>}
+            <p className="mt-3 text-sm text-muted">City: <b className="text-navy">{SCOPE.cityName}</b> · {upcoming.length} upcoming events, each checked by our team.</p>
           </div>
-          {geoError && <p className="mt-2 text-sm text-ink-500" role="alert">{geoError}</p>}
-          {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "run matches" : "runs match"} “{f.q.trim()}” · <a href="#upcoming">see below ↓</a></> : <>No upcoming runs match “{f.q.trim()}”.</>}</p>}
+          <div className="sport-mosaic" aria-hidden>
+            {SPORT_LIST.map((s) => (
+              <div key={s.slug} className="sport-tile" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}><SportIcon sport={s.slug} /><span>{s.name}</span></div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 2. Featured: swipeable poster cards */}
-      {!filtered && featured.length > 0 && (
-        <section className="wrap mt-8" aria-label="Featured runs">
-          <h2 className="h2-small">Featured</h2>
-          <ul className="featured-strip">
-            {featured.map((r) => <li key={r.slug}><Poster run={r} now={now} /></li>)}
+      {/* Featured */}
+      {featured.length > 0 && (
+        <section className="wrap section" aria-labelledby="featured-h">
+          <div className="section-head">
+            <h2 id="featured-h" className="h2">Featured events</h2>
+            <div className="hidden gap-2 sm:flex">
+              <button className="carousel-btn" onClick={() => scrollStrip(-1)} aria-label="Previous featured events">‹</button>
+              <button className="carousel-btn" onClick={() => scrollStrip(1)} aria-label="Next featured events">›</button>
+            </div>
+          </div>
+          <ul ref={strip} className="featured-strip">
+            {featured.map((r) => <li key={r.slug}><EventCard run={r} now={now} featured /></li>)}
           </ul>
         </section>
       )}
 
-      {/* Map of the runs that match, right under the search (free OpenStreetMap tiles) */}
-      <section className="wrap mt-8" aria-label="Map of runs">
-        <LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[300px] md:h-[360px]" />
-        <p className="mt-2 text-xs text-ink-500">{shown.filter((r) => r.location).length} of {shown.length} runs on the map. Pins show the area, not the exact start line.</p>
+      {/* Explore sports */}
+      <section className="wrap section" aria-labelledby="sports-h">
+        <div className="section-head"><h2 id="sports-h" className="h2">Explore sports</h2><p>Running is live in {SCOPE.cityName}. More sports are on the way.</p></div>
+        <ul className="sports-grid">
+          {SPORT_LIST.map((s) => {
+            const n = countBySport(s.slug);
+            return (
+              <li key={s.slug}>
+                <a href={n ? "#upcoming" : undefined} aria-disabled={!n} className="sport-card" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
+                  <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>{n ? `${n} events` : "Coming soon"}</small>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
-      {/* 3. Results: quick filters + one view at a time */}
-      <section id="upcoming" className="wrap mt-10 scroll-mt-20" aria-label="Runs">
-        <div className="filter-rows">
-          <div className="chip-row" role="group" aria-label="When">
-            {WHEN.map((w) => <button key={w.key} className="chip2" aria-pressed={f.when === w.key} onClick={() => update({ when: w.key })}>{w.label}</button>)}
-          </div>
-          <div className="chip-row" role="group" aria-label="Distance or type">
-            <button className="chip2" aria-pressed={!f.kind} onClick={() => update({ kind: "" })}>All categories</button>
-            {cats.map((c) => (
-              <button key={c.key} className="chip2" aria-pressed={f.kind === c.key} onClick={() => update({ kind: f.kind === c.key ? "" : c.key })}>
-                {c.label}<span className="chip-n">{c.n}</span>
-              </button>
-            ))}
-          </div>
+      {/* Upcoming events */}
+      <section id="upcoming" className="wrap section scroll-mt-20" aria-labelledby="upcoming-h">
+        <div className="section-head"><h2 id="upcoming-h" className="h2">Upcoming events</h2></div>
+        <div className="chip-row" role="group" aria-label="When">
+          {WHEN.map((w) => <button key={w.key} className="chip2" aria-pressed={f.when === w.key} onClick={() => update({ when: w.key })}>{w.label}</button>)}
         </div>
-
         <div className="results-bar">
-          <p aria-live="polite"><b>{f.view === "saved" ? saved.length : shown.length}</b> {f.view === "saved" ? "saved" : (shown.length === 1 ? "run" : "runs")}
-            {nearOn && f.view !== "saved" && <span className="text-ink-500"> · nearest first, straight-line</span>}
-            {filtered && f.view !== "saved" && <button className="ml-3 text-sm text-ink-500 underline underline-offset-2" onClick={() => update({ ...EMPTY, view: f.view })}>Clear filters</button>}
+          <p aria-live="polite"><b>{f.view === "saved" ? saved.length : shown.length}</b> {f.view === "saved" ? "saved" : (shown.length === 1 ? "event" : "events")}
+            {nearOn && f.view !== "saved" && <span className="text-muted"> · nearest first, straight-line</span>}
+            {f.kind && <span className="text-muted"> · {CATS.find((c) => c.key === f.kind)?.label}</span>}
+            {filtered && f.view !== "saved" && <button className="btn-tertiary ml-2 !min-h-0 text-sm" onClick={() => update({ ...EMPTY, view: f.view })}>Clear filters</button>}
           </p>
           <div className="view-switch" role="tablist" aria-label="View">
             {VIEWS.map((v) => (
@@ -198,24 +220,65 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
             ))}
           </div>
         </div>
-
         <div className="mt-5">
           {f.view === "list" && (shown.length ? <CardList runs={shown} now={now} distanceOf={distanceOf} flat={nearOn} /> : <Empty cat={CATS.find((c) => c.key === f.kind)?.label} onClear={() => update({ ...EMPTY })} />)}
           {f.view === "calendar" && <CalendarGrid runs={shown} today={now} />}
           {f.view === "saved" && <div id="my-runs">{saved.length ? <CardList runs={saved} now={now} distanceOf={distanceOf} flat /> : (
-            <p className="empty-box">Tap <b>♡ Save</b> on any run and it shows up here. Saved on this device only, no account needed.</p>
+            <p className="empty-box">Tap ♡ on any event and it appears here. Saved on this device only, no account needed.</p>
           )}</div>}
         </div>
       </section>
 
-      {/* Past runs, for reference */}
+      {/* Nearby */}
+      <section id="nearby" className="wrap section scroll-mt-20" aria-labelledby="nearby-h">
+        <div className="section-head">
+          <h2 id="nearby-h" className="h2">Events near you</h2>
+          {origin ? <p>Nearest to <b className="text-navy">{location?.label}</b>, straight-line. <button className="btn-tertiary !min-h-0" onClick={openPicker}>Change</button></p> : null}
+        </div>
+        {!origin ? (
+          <div className="card flex flex-wrap items-center justify-between gap-4">
+            <p className="text-text-2">Share your location (or pick your area) to see the events closest to you.</p>
+            <div className="flex gap-2">
+              <button className="btn-primary" onClick={nearMe} disabled={detecting}>{detecting ? "Finding you…" : "Use my location"}</button>
+              <button className="btn-secondary" onClick={openPicker}>Pick an area</button>
+            </div>
+            {geoError && <p className="w-full text-sm text-text-2" role="alert">{geoError}</p>}
+          </div>
+        ) : (
+          <>
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{nearest.map((r) => <li key={r.slug}><EventCard run={r} now={now} away={distanceOf(r)} /></li>)}</ul>
+            <button className="btn-tertiary mt-3" onClick={() => { update({ near: true, view: "list" }); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>Sort all events by distance</button>
+          </>
+        )}
+      </section>
+
+      {/* Map */}
+      <section id="map" className="wrap section scroll-mt-20" aria-labelledby="map-h">
+        <div className="section-head"><h2 id="map-h" className="h2">Event map</h2><p>{shown.filter((r) => r.location).length} of {shown.length} events on the map. Pins show the area, not the exact start line.</p></div>
+        <LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[360px] md:h-[440px]" />
+      </section>
+
+      {/* Explore by categories */}
+      <section className="wrap section" aria-labelledby="cats-h">
+        <div className="section-head"><h2 id="cats-h" className="h2">Explore by categories</h2><p>Counts include only distances organizers have announced.</p></div>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Distance or type">
+          <button className="chip2" aria-pressed={!f.kind} onClick={() => update({ kind: "" })}>All categories</button>
+          {cats.map((c) => (
+            <button key={c.key} className="chip2" aria-pressed={f.kind === c.key} onClick={() => { update({ kind: f.kind === c.key ? "" : c.key, view: "list" }); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>
+              {c.label}<span className="chip-n">{c.n}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Past */}
       {past.length > 0 && (
-        <section id="past" className="wrap mt-14" aria-labelledby="past-h">
+        <section id="past" className="wrap section" aria-label="Completed events">
           <details className="past-box">
-            <summary><span id="past-h" className="font-bold">Completed runs</span> <span className="text-ink-500">({past.length}) · for reference</span></summary>
+            <summary>Completed events <span className="font-medium text-muted">({past.length}) · for reference</span></summary>
             <ul className="mt-3 divide-y divide-line">
               {past.map((r) => (
-                <li key={r.slug}><Link href={runHref(r.slug)} className="flex flex-wrap justify-between gap-2 py-3 text-ink-600 hover:text-ink-900">
+                <li key={r.slug}><Link href={runHref(r.slug)} className="flex flex-wrap justify-between gap-2 py-3 text-text-2 hover:text-blue">
                   <span className="font-semibold">{r.title}</span><span>{dayParts(r.date).day} {dayParts(r.date).month} {dayParts(r.date).year}{placeLabel(r) ? ` · ${placeLabel(r)}` : ""}</span>
                 </Link></li>
               ))}
@@ -224,12 +287,13 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
         </section>
       )}
 
-      {/* 4. One quiet ad, then organizers */}
-      <div className="wrap mt-14"><AdSlot size="inline" /></div>
-      <section className="wrap mt-8">
+      <div className="wrap section"><AdSlot size="inline" /></div>
+
+      {/* Organizer CTA */}
+      <section className="wrap section">
         <div className="organizer-cta">
-          <div><p className="text-lg font-bold">Organising a run?</p><p className="text-ink-500">List it free. We review every event before it goes live.</p></div>
-          <Link href="/submit" className="btn-primary">Submit an event</Link>
+          <div><p className="text-xl font-bold !text-white">Organising a sporting event?</p><p>List it free on AthletCircle. Every event is reviewed before it goes live.</p></div>
+          <Link href="/submit" className="btn-primary">Submit an Event</Link>
         </div>
       </section>
     </>
@@ -237,35 +301,8 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
 }
 
 const Empty = ({ onClear, cat }: { onClear: () => void; cat?: string }) => (
-  <div className="empty-box">{cat ? `No ${cat} runs announced yet. We'll list them as soon as organisers confirm distances.` : "No runs match."} <button className="underline underline-offset-2" onClick={onClear}>Show all runs</button></div>
+  <div className="empty-box">{cat ? `No ${cat} events announced yet. We'll list them as soon as organizers confirm.` : "No events match."} <button className="btn-tertiary" onClick={onClear}>Show all events</button></div>
 );
-
-/* ---------- Featured poster ---------- */
-
-const POSTER_BG = ["#1d4ed8", "#c2410c", "#0f766e", "#be185d", "#4338ca", "#15803d"];
-
-function Poster({ run, now }: { run: Run; now: Date }) {
-  const d = dayParts(run.date);
-  const photo = photoFor(run, 700);
-  const bg = POSTER_BG[run.slug.length % POSTER_BG.length];
-  return (
-    <Link href={runHref(run.slug)} className="poster" style={{ background: bg }}>
-      {!photo.generic && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo.src} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
-      )}
-      <span className="poster-shade" />
-      <span className="poster-when">{relativeDay(run.date, now)}</span>
-      <span className="poster-body">
-        <span className="poster-date">{d.day} {d.month}</span>
-        <span className="poster-title">{run.title}</span>
-        <span className="poster-place">{placeLabel(run) ?? "Venue to be announced"}</span>
-      </span>
-    </Link>
-  );
-}
-
-/* ---------- Cards ---------- */
 
 type ListProps = { runs: Run[]; now: Date; distanceOf: (r: Run) => number | null };
 
@@ -277,39 +314,10 @@ function CardList({ runs, now, distanceOf, flat }: ListProps & { flat: boolean }
         <div key={g.key}>
           {g.label && <h3 className="month-head">{g.label}</h3>}
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {g.items.map((r) => <li key={r.slug}><RunCard run={r} now={now} away={distanceOf(r)} /></li>)}
+            {g.items.map((r) => <li key={r.slug}><EventCard run={r} now={now} away={distanceOf(r)} /></li>)}
           </ul>
         </div>
       ))}
     </div>
-  );
-}
-
-function RunCard({ run, now, away }: { run: Run; now: Date; away: number | null }) {
-  const d = dayParts(run.date);
-  const rel = relativeDay(run.date, now);
-  const { has, toggle } = useMyRuns();
-  const on = has(run.slug);
-  return (
-    <Link href={runHref(run.slug)} className="run-card2 group">
-      <span className="rc-date"><span className="rc-day">{d.day}</span><span className="rc-mon">{d.month}</span><span className="rc-dow">{d.weekday}</span></span>
-      <span className="min-w-0 flex-1">
-        <span className="rc-when">{rel}</span>
-        <span className="rc-title">{run.title}</span>
-        <span className="rc-meta">
-          {placeLabel(run) ?? "Venue not announced"}
-          {away !== null && <> · <b>{formatDistance(away)}</b></>}
-        </span>
-        <span className="rc-tags">
-          <span className="rc-tag">{SHORT_KIND[run.kind]}</span>
-          {run.distances.slice(0, 3).map((x) => <span key={x} className="rc-tag">{x}</span>)}
-          <button className={`save-btn ml-auto ${on ? "is-on" : ""}`} aria-pressed={on} aria-label={on ? `Remove ${run.title} from saved` : `Save ${run.title}`}
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(run.slug); }}>
-        {on ? "♥" : "♡"}<span className="sr-only sm:not-sr-only"> {on ? "Saved" : "Save"}</span>
-      </button>
-        </span>
-      </span>
-
-    </Link>
   );
 }
