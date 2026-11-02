@@ -248,9 +248,13 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           {origin ? <p>Nearest to <b className="text-navy">{location?.label}</b>, straight-line. <button className="btn-tertiary !min-h-0" onClick={openPicker}>Change</button></p> : null}
         </div>
         {!origin ? (
-          <div className="card flex flex-wrap items-center justify-between gap-4">
-            <p className="text-text-2">Share your location (or pick your area) to see the events closest to you.</p>
-            <div className="flex gap-2">
+          <div className="near-ask">
+            <span className="near-ask-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg></span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-navy">Show events near you?</p>
+              <p className="text-sm text-text-2">Tap “Use my location” and your browser will ask for permission. Your location stays on this device, is never shared, and is forgotten when you close the site. Prefer not to? Pick an area instead.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
               <button className="btn-primary" onClick={nearMe} disabled={detecting}>{detecting ? "Finding you…" : "Use my location"}</button>
               <button className="btn-secondary" onClick={openPicker}>Pick an area</button>
             </div>

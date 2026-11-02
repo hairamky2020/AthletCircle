@@ -31,7 +31,7 @@ const KEY = "ac.location.v1";
 
 /**
  * Holds the visitor's chosen location in the browser only. GPS is requested only when the visitor
- * taps "Use my location". What we persist (localStorage) is coarsened to ~1 km; the precise point
+ * taps "Use my location". What we keep (sessionStorage, this visit only) is coarsened to ~1 km; the precise point
  * lives in memory for this tab. Nothing is sent to a server except optional routing requests.
  */
 export function LocationProvider({ children }: { children: React.ReactNode }) {
@@ -43,7 +43,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(KEY);
+      localStorage.removeItem(KEY); // older builds kept the area across visits; we now ask each visit
+      const raw = sessionStorage.getItem(KEY);
       if (raw) setLocation({ ...JSON.parse(raw), precise: false });
     } catch {}
     setReady(true);
@@ -53,13 +54,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     setLocation(l);
     setError(null);
     try {
-      localStorage.setItem(KEY, JSON.stringify({ ...l, ...coarsen(l), precise: false }));
+      sessionStorage.setItem(KEY, JSON.stringify({ ...l, ...coarsen(l), precise: false }));
     } catch {}
   }, []);
 
   const clear = useCallback(() => {
     setLocation(null);
-    try { localStorage.removeItem(KEY); } catch {}
+    try { sessionStorage.removeItem(KEY); } catch {}
   }, []);
 
   const detect = useCallback(async () => {

@@ -488,3 +488,5 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 .ev-hero-top > * { position: relative; z-index: 1; }
 }
 .ev-hero-feat { margin-left: 10px; vertical-align: middle; }
+.near-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 16px; padding: 20px; box-shadow: 0 8px 22px rgb(16 40 75 / .06); }
+.near-ask-ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 999px; background: var(--color-bg-blue); color: var(--color-blue); flex-shrink: 0; }
