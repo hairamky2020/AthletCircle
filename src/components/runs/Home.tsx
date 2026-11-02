@@ -7,11 +7,10 @@ import { useLocation } from "@/components/location/LocationProvider";
 import { LazyMap } from "@/components/map/LazyMap";
 import { formatDistance, haversineMetres, type LatLng } from "@/lib/geo";
 import { useMyRuns } from "@/lib/myRuns";
-import { dayParts, groupByMonth, isPast, placeLabel, relativeDay, runHref, KINDS, type Kind } from "@/lib/runs";
+import { dayParts, groupByMonth, isPast, placeLabel, relativeDay, runHref, type Kind } from "@/lib/runs";
 import { photoFor } from "@/lib/images";
 import { CalendarGrid } from "./CalendarGrid";
 import { AdSlot } from "./AdSlot";
-import { KindIcon } from "./KindIcon";
 
 /*
  * Home, designed around three questions a runner actually has:
@@ -38,6 +37,19 @@ const VIEWS: { key: View; label: string }[] = [
   { key: "map", label: "Map" },
   { key: "saved", label: "Saved" },
 ];
+/** Category chips. A run matches only on what's announced (its distances or its type); nothing is guessed. */
+const has = (r: Run, ...d: string[]) => r.distances.some((x) => d.includes(x.toUpperCase().replace(/\s/g, "")));
+const CATS: { key: string; label: string; match: (r: Run) => boolean }[] = [
+  { key: "3k", label: "3K", match: (r) => has(r, "3K") },
+  { key: "5k", label: "5K", match: (r) => has(r, "5K") },
+  { key: "10k", label: "10K", match: (r) => has(r, "10K") },
+  { key: "half", label: "Half Marathon", match: (r) => r.kind === "half" || has(r, "21.1K", "21K") },
+  { key: "full", label: "Full Marathon", match: (r) => has(r, "42.2K", "42K", "42.195K") || (r.kind === "marathon" && /marathon/i.test(r.title) && !/half/i.test(r.title)) },
+  { key: "ultra", label: "Ultra Run", match: (r) => r.kind === "ultra" },
+  { key: "theme", label: "Fun Run", match: (r) => r.kind === "theme" },
+  { key: "cause", label: "For a Cause", match: (r) => r.kind === "cause" },
+];
+
 const SHORT_KIND: Record<Kind, string> = { half: "Half marathon", marathon: "Marathon", ultra: "Ultra", theme: "Fun run", cause: "For a cause", community: "Community" };
 
 function readUrl(): Filters {
@@ -96,12 +108,12 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
     let list = upcoming.filter((r) =>
       (!q || `${r.title} ${r.area ?? ""} ${r.venue ?? ""}`.toLowerCase().includes(q)) &&
       inWindow(r.date, f.when, now) &&
-      (!f.kind || r.kind === f.kind));
+      (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
     if (nearOn) list = [...list].sort((a, b) => (distanceOf(a) ?? Infinity) - (distanceOf(b) ?? Infinity));
     return list;
   }, [upcoming, f, now, nearOn, origin?.lat, origin?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const kinds = (Object.keys(KINDS) as Kind[]).map((k) => ({ k, n: upcoming.filter((r) => r.kind === k).length })).filter((x) => x.n > 0);
+  const cats = CATS.map((c) => ({ ...c, n: upcoming.filter(c.match).length }));
   const saved = runs.filter((r) => mine.has(r.slug));
   const featured = (upcoming.filter((r) => r.featured).length ? upcoming.filter((r) => r.featured) : upcoming).slice(0, 6);
   const filtered = Boolean(f.q || f.when || f.kind || f.near);
@@ -148,11 +160,11 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           <div className="chip-row" role="group" aria-label="When">
             {WHEN.map((w) => <button key={w.key} className="chip2" aria-pressed={f.when === w.key} onClick={() => update({ when: w.key })}>{w.label}</button>)}
           </div>
-          <div className="chip-row" role="group" aria-label="Type of run">
-            <button className="chip2" aria-pressed={!f.kind} onClick={() => update({ kind: "" })}>All types</button>
-            {kinds.map(({ k }) => (
-              <button key={k} className="chip2" aria-pressed={f.kind === k} onClick={() => update({ kind: f.kind === k ? "" : k })}>
-                <span className="chip-icon"><KindIcon kind={k} /></span>{SHORT_KIND[k]}
+          <div className="chip-row" role="group" aria-label="Distance or type">
+            <button className="chip2" aria-pressed={!f.kind} onClick={() => update({ kind: "" })}>All categories</button>
+            {cats.map((c) => (
+              <button key={c.key} className="chip2" aria-pressed={f.kind === c.key} onClick={() => update({ kind: f.kind === c.key ? "" : c.key })}>
+                {c.label}<span className="chip-n">{c.n}</span>
               </button>
             ))}
           </div>
@@ -173,7 +185,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
         </div>
 
         <div className="mt-5">
-          {f.view === "list" && (shown.length ? <CardList runs={shown} now={now} distanceOf={distanceOf} flat={nearOn} /> : <Empty onClear={() => update({ ...EMPTY })} />)}
+          {f.view === "list" && (shown.length ? <CardList runs={shown} now={now} distanceOf={distanceOf} flat={nearOn} /> : <Empty cat={CATS.find((c) => c.key === f.kind)?.label} onClear={() => update({ ...EMPTY })} />)}
           {f.view === "calendar" && <CalendarGrid runs={shown} today={now} />}
           {f.view === "map" && <div id="map"><LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[68vh] min-h-[380px]" />
             <p className="mt-2 text-xs text-ink-500">Pins mark the announced area, not the exact start line. {shown.filter((r) => !r.location).length} runs have no venue yet.</p></div>}
@@ -195,8 +207,8 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   );
 }
 
-const Empty = ({ onClear }: { onClear: () => void }) => (
-  <div className="empty-box">No runs match. <button className="underline underline-offset-2" onClick={onClear}>Show all runs</button></div>
+const Empty = ({ onClear, cat }: { onClear: () => void; cat?: string }) => (
+  <div className="empty-box">{cat ? `No ${cat} runs announced yet. We'll list them as soon as organisers confirm distances.` : "No runs match."} <button className="underline underline-offset-2" onClick={onClear}>Show all runs</button></div>
 );
 
 /* ---------- Featured poster ---------- */

@@ -43,9 +43,9 @@ async function run(label, ctxOpts) {
   const n30 = await cards().count();
   check(n30 > 0 && n30 < 13 && page.url().includes("when=month"), `when filter (${n30})`);
   await page.getByRole("button", { name: "Any time" }).click(); await settle();
-  await page.getByRole("group", { name: "Type of run" }).getByRole("button", { name: "Ultra" }).click(); await settle();
+  await page.getByRole("group", { name: "Distance or type" }).getByRole("button", { name: /^Ultra Run/ }).click(); await settle();
   check((await cards().count()) >= 1 && (await cards().first().textContent()).includes("Ultra"), "type filter");
-  await page.getByRole("button", { name: "All types" }).click(); await settle();
+  await page.getByRole("button", { name: "All categories" }).click(); await settle();
   await page.getByLabel("Search runs or areas").fill("gachibowli"); await settle();
   const g = await cards().count();
   check(g >= 1 && (await cards().allTextContents()).every((t) => /Gachibowli/.test(t)), `search (${g})`);
