@@ -73,18 +73,29 @@ export default async function RunPage({ params }: Params) {
         </p>
       )}
 
-      <p className="tagline mt-6">Discover. Participate. Achieve.</p>
-      <header className="mt-3 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
-        <DateBlock date={run.date} size="lg" />
-        <div className="min-w-0">
-          {run.featured && <p className="eyebrow !text-brand-600">Featured</p>}
-          <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-5xl">{run.title}</h1>
-          <p className="mt-2 text-lg text-ink-600">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
-          <Tracker slug={run.slug} />
-          <div className="mt-5" data-track="save"><RegisterToggle slug={run.slug} size="lg" /></div>
+      <section className="ev-hero mt-6">
+        <div className="ev-hero-top">
+          <DateBlock date={run.date} size="lg" />
+          <div className="min-w-0">
+            <p className="tagline tagline-dark">Discover. Participate. Achieve.</p>
+            {run.featured && <p className="ev-hero-feat">Featured</p>}
+            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">{run.title}</h1>
+            <p className="mt-2 text-lg text-white/85">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
+          </div>
+          <PlacePhoto photo={photoFor(run)} className="md:ml-auto" />
         </div>
-        <PlacePhoto photo={photoFor(run)} className="md:ml-auto" />
-      </header>
+        <dl className="ev-stats">
+          <div><dt>Date</dt><dd>{formatLong(run.date)}</dd></div>
+          <div><dt>Distances</dt><dd>{run.distances.length ? run.distances.join(", ") : "Not Announced"}</dd></div>
+          <div><dt>Fee</dt><dd>Not Announced</dd></div>
+          <div><dt>Prize</dt><dd>Not Announced</dd></div>
+          <div><dt>Registration</dt><dd className={run.registrationUrl ? "text-success" : "text-warning"}>{run.registrationUrl ? "Open" : "Not Announced"}</dd></div>
+        </dl>
+        <div className="ev-actions">
+          <div data-track="save"><RegisterToggle slug={run.slug} size="lg" /></div>
+          <Tracker slug={run.slug} />
+        </div>
+      </section>
 
       <div className="grid gap-12 py-8 lg:grid-cols-[1fr_320px]">
         <div>

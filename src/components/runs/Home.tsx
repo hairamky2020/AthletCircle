@@ -142,7 +142,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
         <div className="wrap hero3-inner">
           <div>
             <p className="tagline mb-3">Discover. Participate. Achieve.</p>
-            <h1>Every Sport. Every Athlete. <span className="text-blue">One Circle.</span></h1>
+            <h1>Every Sport. Every Athlete. <span className="text-orange">One Circle.</span></h1>
             <p className="hero3-sub">Discover sporting events, explore opportunities near you and connect with the sporting community.</p>
             <form className="searchbar" role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>
               <label className="sr-only" htmlFor="q">Search events</label>

@@ -306,3 +306,25 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 }
+
+/* ---------- Bold Navy (Option A) ---------- */
+@layer components {
+.hero3 { background: linear-gradient(120deg, var(--color-navy) 0%, var(--color-navy) 58%, var(--color-blue) 100%); border-bottom: 0; }
+.hero3 h1 { color: var(--color-white); }
+.hero3 .hero3-sub { color: rgb(255 255 255 / .85); }
+.hero3 .tagline, .tagline-dark { color: var(--color-orange); letter-spacing: .12em; text-transform: uppercase; }
+.hero3 .tagline::before, .tagline-dark::before { background: var(--color-orange); }
+.hero3 .searchbar { border: 0; box-shadow: 0 16px 40px rgb(0 0 0 / .25); }
+.ev-hero { border-radius: 16px; overflow: hidden; border: 1px solid var(--color-border); background: var(--color-white); }
+.ev-hero-top { background: var(--color-navy); padding: 28px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+@media (min-width: 768px) { .ev-hero-top { padding: 40px; } }
+.ev-hero-feat { margin-top: 8px; display: inline-block; background: var(--color-orange); color: var(--color-navy); font-size: 12px; font-weight: 800; border-radius: 999px; padding: 3px 10px; }
+.ev-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: var(--color-bg); padding: 16px 24px; margin: 0; }
+@media (min-width: 900px) { .ev-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 20px 40px; } }
+.ev-stats > div { background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px 14px; }
+.ev-stats dt { font-size: 12px; font-weight: 600; color: var(--color-muted); }
+.ev-stats dd { margin: 2px 0 0; font-size: 15px; font-weight: 800; color: var(--color-navy); }
+.ev-stats dd.text-warning::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 99px; background: var(--color-warning); margin-right: 6px; } .ev-stats dd.text-success { color: var(--color-success); }
+.ev-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 16px 24px; }
+@media (min-width: 768px) { .ev-actions { padding: 18px 40px; } }
+}
