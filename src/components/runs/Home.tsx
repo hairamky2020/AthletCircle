@@ -21,7 +21,7 @@ import { AdSlot } from "./AdSlot";
  */
 
 type When = "" | "weekend" | "month" | "3months";
-type View = "list" | "calendar" | "map" | "saved";
+type View = "list" | "calendar" | "saved";
 type Filters = { q: string; when: When; kind: string; near: boolean; view: View };
 const EMPTY: Filters = { q: "", when: "", kind: "", near: false, view: "list" };
 
@@ -34,7 +34,6 @@ const WHEN: { key: When; label: string }[] = [
 const VIEWS: { key: View; label: string }[] = [
   { key: "list", label: "List" },
   { key: "calendar", label: "Calendar" },
-  { key: "map", label: "Map" },
   { key: "saved", label: "Saved" },
 ];
 /** Category chips. A run matches only on what's announced (its distances or its type); nothing is guessed. */
@@ -54,7 +53,7 @@ const SHORT_KIND: Record<Kind, string> = { half: "Half marathon", marathon: "Mar
 
 function readUrl(): Filters {
   const p = new URLSearchParams(window.location.search);
-  const view = (p.get("view") as View) || (window.location.hash === "#my-runs" ? "saved" : window.location.hash === "#map" ? "map" : "list");
+  const view = (p.get("view") as View) || (window.location.hash === "#my-runs" ? "saved" : "list");
   return { q: p.get("q") ?? "", when: (p.get("when") as When) ?? "", kind: p.get("type") ?? "", near: p.get("sort") === "nearest", view };
 }
 function writeUrl(f: Filters) {
@@ -83,6 +82,14 @@ function inWindow(date: string, when: When, now: Date) {
   return date >= today && date <= ymd(new Date(now.getTime() + days * 864e5));
 }
 
+/** A run matches when EVERY word typed appears in its name, area, venue, type, distances or month. */
+function matchesWords(r: Run, words: string[]) {
+  if (!words.length) return true;
+  const d = dayParts(r.date);
+  const hay = `${r.title} ${r.area ?? ""} ${r.venue ?? ""} ${SHORT_KIND[r.kind]} ${r.distances.join(" ")} ${d.month} ${d.year}`.toLowerCase();
+  return words.every((w) => hay.includes(w));
+}
+
 export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const [now, setNow] = useState(() => new Date(builtAt));
   const [f, setF] = useState<Filters>(EMPTY);
@@ -104,9 +111,9 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const nearOn = f.near && !!origin;
 
   const shown = useMemo(() => {
-    const q = f.q.trim().toLowerCase();
+    const words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
     let list = upcoming.filter((r) =>
-      (!q || `${r.title} ${r.area ?? ""} ${r.venue ?? ""}`.toLowerCase().includes(q)) &&
+      matchesWords(r, words) &&
       inWindow(r.date, f.when, now) &&
       (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
     if (nearOn) list = [...list].sort((a, b) => (distanceOf(a) ?? Infinity) - (distanceOf(b) ?? Infinity));
@@ -117,6 +124,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const saved = runs.filter((r) => mine.has(r.slug));
   const featured = (upcoming.filter((r) => r.featured).length ? upcoming.filter((r) => r.featured) : upcoming).slice(0, 6);
   const filtered = Boolean(f.q || f.when || f.kind || f.near);
+  const past = useMemo(() => runs.filter((r) => isPast(r, now)).reverse(), [runs, now]);
 
   async function nearMe() {
     if (nearOn) return update({ near: false });
@@ -141,11 +149,18 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
             </button>
           </div>
           {geoError && <p className="mt-2 text-sm text-ink-500" role="alert">{geoError}</p>}
+          {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "run matches" : "runs match"} “{f.q.trim()}” · <a href="#upcoming">see below ↓</a></> : <>No upcoming runs match “{f.q.trim()}”.</>}</p>}
         </div>
       </section>
 
       {/* 2. Featured: swipeable poster cards */}
-      {featured.length > 0 && (
+      {/* Map of the runs that match, right under the search (free OpenStreetMap tiles) */}
+      <section className="wrap mt-6" aria-label="Map of runs">
+        <LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[300px] md:h-[360px]" />
+        <p className="mt-2 text-xs text-ink-500">{shown.filter((r) => r.location).length} of {shown.length} runs on the map. Pins show the area, not the exact start line.</p>
+      </section>
+
+      {!filtered && featured.length > 0 && (
         <section className="wrap mt-8" aria-label="Featured runs">
           <h2 className="h2-small">Featured</h2>
           <ul className="featured-strip">
@@ -187,13 +202,27 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
         <div className="mt-5">
           {f.view === "list" && (shown.length ? <CardList runs={shown} now={now} distanceOf={distanceOf} flat={nearOn} /> : <Empty cat={CATS.find((c) => c.key === f.kind)?.label} onClear={() => update({ ...EMPTY })} />)}
           {f.view === "calendar" && <CalendarGrid runs={shown} today={now} />}
-          {f.view === "map" && <div id="map"><LazyMap runs={shown.filter((r) => r.location)} origin={origin} height="h-[68vh] min-h-[380px]" />
-            <p className="mt-2 text-xs text-ink-500">Pins mark the announced area, not the exact start line. {shown.filter((r) => !r.location).length} runs have no venue yet.</p></div>}
           {f.view === "saved" && <div id="my-runs">{saved.length ? <CardList runs={saved} now={now} distanceOf={distanceOf} flat /> : (
             <p className="empty-box">Tap <b>♡ Save</b> on any run and it shows up here. Saved on this device only, no account needed.</p>
           )}</div>}
         </div>
       </section>
+
+      {/* Past runs, for reference */}
+      {past.length > 0 && (
+        <section id="past" className="wrap mt-14" aria-labelledby="past-h">
+          <details className="past-box">
+            <summary><span id="past-h" className="font-bold">Completed runs</span> <span className="text-ink-500">({past.length}) · for reference</span></summary>
+            <ul className="mt-3 divide-y divide-line">
+              {past.map((r) => (
+                <li key={r.slug}><Link href={runHref(r.slug)} className="flex flex-wrap justify-between gap-2 py-3 text-ink-600 hover:text-ink-900">
+                  <span className="font-semibold">{r.title}</span><span>{dayParts(r.date).day} {dayParts(r.date).month} {dayParts(r.date).year}{placeLabel(r) ? ` · ${placeLabel(r)}` : ""}</span>
+                </Link></li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
 
       {/* 4. One quiet ad, then organizers */}
       <div className="wrap mt-14"><AdSlot size="inline" /></div>

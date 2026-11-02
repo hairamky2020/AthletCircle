@@ -49,7 +49,12 @@ async function run(label, ctxOpts) {
   await page.getByLabel("Search runs or areas").fill("gachibowli"); await settle();
   const g = await cards().count();
   check(g >= 1 && (await cards().allTextContents()).every((t) => /Gachibowli/.test(t)), `search (${g})`);
+  await page.getByLabel("Search runs or areas").fill("iit half"); await settle();
+  check((await cards().count()) === 1 && await page.getByText(/1 run matches/).isVisible(), "multi-word search narrows to one");
+  check((await page.locator(".featured-strip").count()) === 0, "featured hides while searching");
   await page.getByLabel("Search runs or areas").fill(""); await settle();
+  await page.getByText("Completed runs").click(); await settle();
+  check((await page.locator("#past li").count()) >= 1, "completed runs section");
 
   await page.getByRole("button", { name: "Near me" }).click(); await page.waitForTimeout(1200);
   check(await page.getByText(/nearest first, straight-line/).isVisible(), "near me sorts nearest first");
@@ -70,7 +75,7 @@ async function run(label, ctxOpts) {
   await page.getByRole("button", { name: "Next month" }).click(); await settle();
   check(/November|December|January/.test(await page.locator(".cal-poster-month").textContent()), "calendar view navigates months");
 
-  await page.getByRole("tab", { name: "Map" }).click(); await page.waitForTimeout(2500);
+  await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(2500);
   const markers = await page.locator(".rc-marker").count();
   check(markers >= 3, `map markers (${markers})`);
   await page.locator(".rc-marker").first().evaluate((el) => el.scrollIntoView({ block: "center" })); await settle();
