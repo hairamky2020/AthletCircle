@@ -2,7 +2,7 @@ export const SITE = {
   name: "AthletCircle",
   tagline: "Discover. Participate. Achieve.",
   message: "Every Sport. Every Athlete. One Circle.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://athletcircle.com").replace(/\/$/, ""),
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "athletcircle@gmail.com",
   // Free map tiles with no API key: OpenFreeMap (OpenStreetMap data), drawn inside Leaflet.
   // No usage limit or sign-up; attribution required. Change with NEXT_PUBLIC_MAP_STYLE_URL.
