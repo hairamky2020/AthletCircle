@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Run } from "@/data/schema";
 import { dayParts, placeLabel, relativeDay, runHref, KINDS } from "@/lib/runs";
 import { RegisterToggle } from "./RegisterToggle";
+import { photoFor } from "@/lib/images";
 
 // Each slide gets its own poster palette so the carousel feels like a stack of race posters.
 const THEMES = [
@@ -53,12 +54,14 @@ export function Banner({ runs, now }: { runs: Run[]; now: Date }) {
                   <span className="slide-reg"><RegisterToggle slug={r.slug} /></span>
                 </div>
               </div>
-              <ul className="slide-tiles" aria-label="Categories">
-                {tiles.map((x) => (
-                  <li key={x.big}><span className="slide-tile-big" style={{ color: t.accent }}>{x.big}</span>{x.small && <span className="slide-tile-small">{x.small}</span>}</li>
-                ))}
-                {!r.distances.length && <li className="slide-tile-note">Distances to be announced</li>}
-              </ul>
+              <figure className="slide-photo">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photoFor(r, 800).src} alt={photoFor(r).caption} loading={n === 0 ? "eager" : "lazy"} onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} />
+                <figcaption>
+                  <span>{r.distances.length ? r.distances.join(" · ") : "Distances to be announced"}</span>
+                  <a href={photoFor(r).page} target="_blank" rel="noopener" tabIndex={-1}>Photo: {photoFor(r).caption} · Wikimedia Commons</a>
+                </figcaption>
+              </figure>
             </div>
           </div>
         );

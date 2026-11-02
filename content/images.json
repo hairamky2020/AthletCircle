@@ -1,0 +1,9 @@
+{
+  "_note": "Free-licence photos from Wikimedia Commons, matched by event slug or by area. They show the PLACE, never the event itself. Each file page on Commons lists the author and licence.",
+  "byArea": {
+    "Statue of Equality, Muchintal": { "file": "Statue_of_Equality,_Hyderabad.jpg", "caption": "Statue of Equality, Muchintal" },
+    "Gandipet": { "file": "Gandipet_lake_in_Hyderabad.jpg", "caption": "Gandipet (Osman Sagar) lake" }
+  },
+  "bySlug": {},
+  "city": { "file": "Hussain_Sagar_lake,_Hyderabad.jpg", "caption": "Hussain Sagar, Hyderabad" }
+}

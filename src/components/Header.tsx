@@ -27,7 +27,7 @@ export function Header() {
           <LogoMark className="text-brand-500" />
           <span className="logo-text text-[20px] font-black text-white">Athlet<span className="text-brand-500">Circle</span></span>
         </Link>
-        <nav className="hidden items-center gap-5 text-[14px] text-white/70 xl:flex" aria-label="Main">
+        <nav className="hidden items-center gap-5 text-[14px] text-white/70 2xl:flex" aria-label="Main">
           {NAV.map((n) => <Link key={n.href} href={n.href} className="whitespace-nowrap hover:text-white">{n.label}</Link>)}
         </nav>
         <div className="ml-auto flex items-center gap-3">
@@ -42,13 +42,13 @@ export function Header() {
           <Link href="/#my-runs" className="my-runs-btn">
             My runs<span className="my-runs-count">{slugs.length}</span>
           </Link>
-          <button className="menu-btn xl:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)} aria-label="Menu">
+          <button className="menu-btn 2xl:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)} aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
           </button>
         </div>
       </div>
       {open && (
-        <nav id="mobile-nav" className="wrap grid gap-1 pb-4 xl:hidden" aria-label="Mobile">
+        <nav id="mobile-nav" className="wrap grid gap-1 pb-4 2xl:hidden" aria-label="Mobile">
           {NAV.map((n) => <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 font-medium hover:bg-ink-50">{n.label}</Link>)}
         </nav>
       )}

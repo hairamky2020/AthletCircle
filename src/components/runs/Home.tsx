@@ -96,6 +96,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   return (
     <>
       <div className="wrap pt-6 md:pt-8"><Banner runs={featured.length ? featured : upcoming.slice(0, 3)} now={now} /></div>
+      <div className="wrap mt-4"><NearMeBar shown={shown} active={f.near && !!origin} distanceOf={distanceOf} onOn={() => update({ near: true })} onOff={() => update({ near: false })} /></div>
       <div className="wrap mt-4"><AdSlot size="leaderboard" /></div>
       <Intro next={next} now={now} total={upcoming.length} months={months.length} areas={areaCount} />
       <div className="wrap">
@@ -149,7 +150,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
         <div className="mt-14"><AdSlot size="inline" /></div>
 
         <Section id="map" kicker="04" title="Map" note="Pins mark the announced area, not the exact start line.">
-          <MapBlock runs={shown} origin={origin} />
+          <MapBlock runs={shown} origin={origin} distanceOf={distanceOf} />
         </Section>
 
         <Section id="my-runs" kicker="05" title="My runs" note="Runs you’ve marked as registered. Saved on this device only.">
@@ -214,6 +215,39 @@ function Categories({ runs, active, onPick }: { runs: Run[]; active: string; onP
         </li>
       ))}
     </ul>
+  );
+}
+
+/* ---------- Runs near me ---------- */
+
+function NearMeBar({ shown, active, distanceOf, onOn, onOff }: { shown: Run[]; active: boolean; distanceOf: (r: Run) => number | null; onOn: () => void; onOff: () => void }) {
+  const { location, detect, detecting, error, openPicker } = useLocation();
+  async function findNear() {
+    const l = await detect();
+    if (l) { onOn(); setTimeout(() => document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }), 50); }
+  }
+  const nearest = active ? shown.filter((r) => distanceOf(r) != null).slice(0, 3) : [];
+  return (
+    <section className="near-bar" aria-label="Runs near me">
+      {!active ? (
+        <>
+          <p className="font-semibold">Which runs are closest to you?</p>
+          <button className="near-btn" onClick={findNear} disabled={detecting}>
+            <svg width="14" height="16" viewBox="0 0 12 14" aria-hidden><path d="M6 13.5S1 8.6 1 5.5a5 5 0 0 1 10 0c0 3.1-5 8-5 8Z" fill="none" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="5.5" r="1.6" fill="currentColor"/></svg>
+            {detecting ? "Finding you…" : "Show runs near me"}
+          </button>
+          <button className="text-sm underline underline-offset-2 opacity-80 hover:opacity-100" onClick={() => { openPicker(); onOn(); }}>or pick your area</button>
+          {error && <p className="w-full text-sm text-amber-200" role="alert">{error}</p>}
+        </>
+      ) : (
+        <>
+          <p className="font-semibold">Nearest to {location?.label}</p>
+          <div className="near-list">{nearest.map((r) => <Link key={r.slug} href={runHref(r.slug)}>{r.title}<b>{formatDistance(distanceOf(r)!)}</b></Link>)}</div>
+          <p className="text-xs opacity-70">Straight-line distance. List and map below are sorted nearest first.</p>
+          <button className="ml-auto text-sm underline underline-offset-2" onClick={onOff}>Turn off</button>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -350,20 +384,20 @@ function ListTable({ runs, now, distanceOf }: ListProps) {
 
 /* ---------- Map ---------- */
 
-function MapBlock({ runs, origin }: { runs: Run[]; origin: LatLng | null }) {
+function MapBlock({ runs, origin, distanceOf }: { runs: Run[]; origin: LatLng | null; distanceOf: (r: Run) => number | null }) {
   const mapped = runs.filter((r) => r.location);
   const unmapped = runs.filter((r) => !r.location);
   const Item = ({ r }: { r: Run }) => (
     <li><Link href={runHref(r.slug)} className="flex gap-3 py-2 hover:text-brand-600">
       <span className="w-12 shrink-0 font-mono text-xs leading-5 text-ink-500">{dayParts(r.date).day} {dayParts(r.date).month}</span>
-      <span><span className="font-semibold">{r.title}</span>{r.area && <span className="block text-xs text-ink-500">{r.area}</span>}</span>
+      <span><span className="font-semibold">{r.title}</span>{r.area && <span className="block text-xs text-ink-500">{r.area}{distanceOf(r) != null && ` · ${formatDistance(distanceOf(r)!)} straight-line`}</span>}</span>
     </Link></li>
   );
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       <LazyMap runs={mapped} origin={origin} height="h-[62vh] min-h-[380px]" />
       <aside className="rounded-2xl border border-ink-200 bg-white p-5 text-sm lg:max-h-[62vh] lg:overflow-auto">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">On the map · {mapped.length}</h3>
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">{origin ? "Nearest first" : "On the map"} · {mapped.length}</h3>
         <ul className="mb-5 mt-1 divide-y divide-ink-100">{mapped.map((r) => <Item key={r.slug} r={r} />)}</ul>
         {unmapped.length > 0 && <>
           <h3 className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">Venue not announced yet · {unmapped.length}</h3>

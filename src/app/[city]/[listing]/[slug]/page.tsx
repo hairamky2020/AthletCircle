@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { RUNS, getRun, otherRuns, scopeParams } from "@/data/events";
 import { JsonLd } from "@/components/JsonLd";
 import { Tracker } from "@/components/Tracker";
+import { PlacePhoto } from "@/components/runs/PlacePhoto";
+import { photoFor } from "@/lib/images";
 import { DateBlock } from "@/components/runs/DateBlock";
 import { AddToCalendar } from "@/components/runs/AddToCalendar";
 import { RegisterToggle } from "@/components/runs/RegisterToggle";
@@ -71,7 +73,7 @@ export default async function RunPage({ params }: Params) {
         </p>
       )}
 
-      <header className="mt-6 flex gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
+      <header className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-[0_10px_30px_-18px_rgba(12,12,10,.25)] md:p-10">
         <DateBlock date={run.date} size="lg" />
         <div className="min-w-0">
           {run.featured && <p className="eyebrow !text-brand-600">Featured</p>}
@@ -80,6 +82,7 @@ export default async function RunPage({ params }: Params) {
           <Tracker slug={run.slug} />
           <div className="mt-5" data-track="save"><RegisterToggle slug={run.slug} size="lg" /></div>
         </div>
+        <PlacePhoto photo={photoFor(run)} className="md:ml-auto" />
       </header>
 
       <div className="grid gap-12 py-8 lg:grid-cols-[1fr_320px]">
