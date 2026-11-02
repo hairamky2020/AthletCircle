@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { eventSchema } from "@/data/schema";
 import { RUNS } from "@/data/events";
 import { EventDetails } from "@/components/event/EventDetails";
+import { DEMO_ALLOWED } from "@/lib/live";
 
 // Layout preview for admins: shows every section filled in, using obviously fictional sample data.
 // Not linked from the site and not indexed. Real events only ever show announced information.
@@ -38,6 +39,7 @@ const sample = eventSchema.parse({
 });
 
 export default function TemplatePreview() {
+  if (!DEMO_ALLOWED) return <p className="wrap panel mt-10">Not available.</p>;
   return (
     <>
       <p className="bg-navy px-4 py-3 text-center text-sm font-bold text-white">Layout preview with fictional sample data. Not a real event. Real event pages only show announced information.</p>
