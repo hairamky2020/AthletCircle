@@ -40,8 +40,8 @@ export function EventCard({ run, now, away, featured = false }: { run: Run; now:
           {run.distances.length ? run.distances.map((x) => <span key={x} className="badge">{x}</span>) : <span className="badge">Categories Not Announced</span>}
         </div>
         <dl className="ev-facts">
-          <dt>Fee</dt><dd>{NA}</dd>
-          <dt>Prize</dt><dd>{NA}</dd>
+          <dt>Fee</dt><dd>{feeFrom(run) ?? NA}</dd>
+          <dt>Prize</dt><dd>{prizeText(run) ?? NA}</dd>
         </dl>
         <div className="ev-foot">
           <span className="ev-status" style={{ "--st": status.c } as React.CSSProperties}>{status.label}</span>
@@ -55,4 +55,15 @@ export function EventCard({ run, now, away, featured = false }: { run: Run; now:
       </div>
     </article>
   );
+}
+
+/** Lowest announced fee, as quoted text; never computed beyond picking the minimum. */
+function feeFrom(run: { details?: { categories?: { fee?: string }[]; overview?: string } }): string | null {
+  const nums = (run.details?.categories ?? []).map((c) => c.fee?.match(/₹\s?([\d,]+)/)?.[1]).filter(Boolean).map((n) => Number(n!.replace(/,/g, "")));
+  if (!nums.length) { const m = run.details?.overview?.match(/from ₹\s?([\d,]+)/); return m ? `From ₹${m[1]}` : null; }
+  const min = Math.min(...nums); return `${nums.length > 1 ? "From " : ""}₹${min.toLocaleString("en-IN")}`;
+}
+function prizeText(run: { details?: { prizes?: { places: { award: string }[] }[]; awards?: string[] } }): string | null {
+  const top = run.details?.prizes?.[0]?.places?.[0]?.award; if (top) return `Up to ${top}`;
+  return run.details?.awards?.length ? "Awards" : null;
 }
