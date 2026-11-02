@@ -23,6 +23,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
+    <>
     <header className="site-header">
       <div className="wrap flex h-[68px] items-center gap-6">
         <Link href="/" className="shrink-0" aria-label="AthletCircle home">
@@ -46,13 +47,14 @@ export function Header() {
           </button>
         </div>
       </div>
-      <SportBar />
       {open && (
         <nav id="mobile-nav" className="site-nav wrap grid gap-1 border-t border-line pb-4 pt-2 xl:hidden" aria-label="Mobile">
           {[...NAV, { href: "/submit", label: "Submit an Event" }].map((n) => <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3">{n.label}</Link>)}
         </nav>
       )}
     </header>
+    <SportBar />
+    </>
   );
 }
 
