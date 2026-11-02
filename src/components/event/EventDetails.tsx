@@ -112,7 +112,7 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
 
       {/* Hero: themed by the run name */}
       <section className={`ed-hero2 theme-${theme}`}>
-        <div className="wrap ed-hero2-in">
+        <div className="wrap ed-hero2-in"><div className="ed-hero2-grid"><div className="min-w-0">
           <nav className="ed-crumbs" aria-label="Breadcrumb">
             <Link href="/">Home</Link><span>/</span><Link href="/#upcoming">{sportName} events</Link><span>/</span><span aria-current="page">{run.title}</span>
           </nav>
@@ -128,9 +128,11 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
             <div data-track="save"><RegisterToggle slug={run.slug} size="lg" /></div>
             <ShareBar slug={run.slug} title={run.title} when={formatLong(run.date)} url={url} />
           </div>
+          </div>
+          <div className="ed-hero2-art" aria-hidden="true"><span className="ed-banner-date"><b>{day.day}</b><span>{day.month}</span></span><RunArt run={run} className="ed-art2" /></div>
+          </div>
           <Tracker slug={run.slug} />
         </div>
-        <div className="ed-hero2-art" aria-hidden="true"><RunArt run={run} className="ed-art2" /></div>
       </section>
 
       <div className="wrap ed-body ed-body2">
