@@ -1,6 +1,7 @@
 // Date and grouping helpers for runs. Run dates are calendar dates in IST (YYYY-MM-DD).
 import { istDate } from "./dates";
 import type { Run } from "@/data/schema";
+import { listingHref } from "@/data/events";
 
 const utc = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
 const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-IN", { timeZone: "UTC", ...o });
@@ -52,7 +53,7 @@ export const placeLabel = (r: Pick<Run, "venue" | "area">) => r.venue ?? r.area 
 export const webSearchUrl = (r: Pick<Run, "title" | "date">) =>
   `https://www.google.com/search?q=${encodeURIComponent(`${r.title} Hyderabad ${r.date.slice(0, 4)} registration`)}`;
 
-export const runHref = (slug: string) => `/runs/${slug}`;
+export const runHref = (slug: string) => `${listingHref()}/${slug}`;
 
 /** Event categories shown on the home page (from each run's "kind"). */
 export const KINDS = {

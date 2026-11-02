@@ -1,0 +1,25 @@
+grant usage on schema public, auth to anon, authenticated;
+grant all on all tables in schema public to anon, authenticated;
+grant all on all sequences in schema public to anon, authenticated;
+insert into auth.users values ('00000000-0000-0000-0000-00000000000a','org@x.in'),('00000000-0000-0000-0000-00000000000b','rev@x.in'),('00000000-0000-0000-0000-00000000000c','ed@x.in');
+update profiles set role='reviewer' where email='rev@x.in'; update profiles set role='editor' where email='ed@x.in';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+insert into events (slug,title,sport_id,city_id,start_date,source,status,featured_rank) select 'test-run','Test Run',(select id from sports where slug='running'),(select id from locations where path='in/telangana/hyderabad'),'2027-01-10','organizer','published',1;
+select 'org insert ->', status, featured_rank from events where slug='test-run';
+\set ON_ERROR_STOP 0
+select set_event_status((select id from events where slug='test-run'),'published');
+update events set status='published' where slug='test-run';
+select 'org after update ->', status from events where slug='test-run';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+select set_event_status((select id from events where slug='test-run'),'rejected');
+select 'rev approve ->', (set_event_status((select id from events where slug='test-run'),'approved')).status;
+select set_event_status((select id from events where slug='test-run'),'published');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+select 'ed publish ->', (set_event_status((select id from events where slug='test-run'),'published')).status;
+select 'metrics', admin_metrics('2026-01-01','2027-12-31')->'by_status';
+reset role; set role anon; set request.jwt.claim.sub = '';
+select 'anon sees', count(*) from events; select count(*) as anon_audit from audit_log;
+insert into event_interactions (event_slug, kind) values ('test-run','view');
+reset role;
+select from_status, to_status, reason from status_history;

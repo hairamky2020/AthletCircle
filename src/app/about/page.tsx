@@ -9,7 +9,7 @@ export default function AboutPage() {
     <div className="wrap pt-10">
       <h1 className="mb-6 text-3xl font-bold tracking-tight md:text-4xl">About</h1>
       <Prose>
-        <p>athletcircle lists upcoming running events in Hyderabad in one place: by month, on a calendar and on a map. We’re starting with running in Hyderabad and will add more sports and cities.</p>
+        <p>AthletCircle lists upcoming running events in Hyderabad in one place: by month, on a calendar and on a map. We’re starting with running in Hyderabad and will add more sports and cities.</p>
         <h2>Where the listings come from</h2>
         <p>We only list runs we’ve seen announced. If something isn’t announced yet, such as the start time, distances or the registration link, we say so rather than guess. Always confirm with the organiser before you travel.</p>
         <h2>Map pins and distances</h2>

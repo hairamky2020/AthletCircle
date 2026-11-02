@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RUNS, getRun, otherRuns } from "@/data/events";
+import { RUNS, getRun, otherRuns, scopeParams } from "@/data/events";
 import { JsonLd } from "@/components/JsonLd";
+import { Tracker } from "@/components/Tracker";
 import { DateBlock } from "@/components/runs/DateBlock";
 import { AddToCalendar } from "@/components/runs/AddToCalendar";
 import { RegisterToggle } from "@/components/runs/RegisterToggle";
@@ -13,9 +14,9 @@ import { directionsUrl } from "@/lib/geo";
 import { SITE } from "@/lib/site";
 
 export const dynamicParams = false;
-export const generateStaticParams = () => RUNS.map((r) => ({ slug: r.slug }));
+export const generateStaticParams = () => RUNS.map((r) => ({ ...scopeParams(), slug: r.slug }));
 
-type Params = { params: Promise<{ slug: string }> };
+type Params = { params: Promise<{ city: string; listing: string; slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const run = getRun((await params).slug);
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-const NOT_YET = <span className="text-ink-400">Not announced yet</span>;
+const NOT_YET = <span className="text-ink-400">Not Announced</span>;
 
 export default async function RunPage({ params }: Params) {
   const run = getRun((await params).slug);
@@ -76,7 +77,8 @@ export default async function RunPage({ params }: Params) {
           {run.featured && <p className="eyebrow !text-brand-600">Featured</p>}
           <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-5xl">{run.title}</h1>
           <p className="mt-2 text-lg text-ink-600">{place ? `${place}, Hyderabad` : "Hyderabad · venue not announced yet"}</p>
-          <div className="mt-5"><RegisterToggle slug={run.slug} size="lg" /></div>
+          <Tracker slug={run.slug} />
+          <div className="mt-5" data-track="save"><RegisterToggle slug={run.slug} size="lg" /></div>
         </div>
       </header>
 
@@ -88,8 +90,8 @@ export default async function RunPage({ params }: Params) {
             <dt className="text-ink-500">Where</dt><dd>{run.venue ?? run.area ?? NOT_YET}</dd>
             <dt className="text-ink-500">Distances</dt><dd>{run.distances.length ? run.distances.join(", ") : NOT_YET}</dd>
             <dt className="text-ink-500">Registration</dt>
-            <dd>{run.registrationUrl ? <a href={run.registrationUrl} target="_blank" rel="noopener nofollow" className="link font-semibold">Official registration page ↗</a> : <>No official link yet. <a href={webSearchUrl(run)} target="_blank" rel="noopener" className="link">Search the web ↗</a></>}</dd>
-            {run.websiteUrl && <><dt className="text-ink-500">Website</dt><dd><a href={run.websiteUrl} target="_blank" rel="noopener" className="link">{new URL(run.websiteUrl).hostname} ↗</a></dd></>}
+            <dd>{run.registrationUrl ? <a href={run.registrationUrl} data-track="register_click" target="_blank" rel="noopener nofollow" className="link font-semibold">Official registration page ↗</a> : <>No official link yet. <a href={webSearchUrl(run)} target="_blank" rel="noopener" className="link">Search the web ↗</a></>}</dd>
+            {run.websiteUrl && <><dt className="text-ink-500">Website</dt><dd><a href={run.websiteUrl} data-track="register_click" target="_blank" rel="noopener" className="link">{new URL(run.websiteUrl).hostname} ↗</a></dd></>}
           </dl>
           {run.note && <p className="mt-6 border-l-2 border-line pl-4 text-sm text-ink-600">{run.note}</p>}
 
@@ -113,7 +115,7 @@ export default async function RunPage({ params }: Params) {
           )}
           <section>
             <h2 className="eyebrow mb-2">Add to calendar</h2>
-            <AddToCalendar slug={run.slug} title={run.title} date={run.date} endDate={run.endDate} place={place ? `${place}, Hyderabad` : "Hyderabad"} url={url} />
+            <div data-track="calendar_add"><AddToCalendar slug={run.slug} title={run.title} date={run.date} endDate={run.endDate} place={place ? `${place}, Hyderabad` : "Hyderabad"} url={url} /></div>
           </section>
           <section>
             <h2 className="eyebrow mb-2">Know more about this run?</h2>

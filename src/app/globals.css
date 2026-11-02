@@ -247,3 +247,30 @@ body { background: #faf8f8; }
 .cal-run:hover { background: var(--color-ink-950); color: white; }
 .cal-run-arrow { width: 30px; height: 30px; flex-shrink: 0; border-radius: 999px; display: grid; place-items: center; background: white; color: var(--color-ink-950); transition: transform .2s; }
 .cal-run:hover .cal-run-arrow { background: var(--color-brand-500); color: white; transform: rotate(-45deg); }
+
+/* Header additions */
+.city-select { border-radius: 999px; border: 1px solid var(--color-line, #e5e5e5); background: white; padding: 5px 10px; font-weight: 600; font-size: 14px; }
+.menu-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--color-line, #e5e5e5); }
+.logo-text { text-transform: none; }
+
+/* Portal and admin */
+.panel { border: 1px solid #eee7e7; background: white; border-radius: 18px; padding: 22px; }
+.demo-note { margin-bottom: 18px; border-radius: 14px; background: #fff7e0; border: 1px solid #f3dc8f; padding: 12px 16px; font-size: 14px; }
+.btn-primary { border-radius: 999px; background: var(--color-brand-500); color: white; font-weight: 700; padding: 10px 20px; justify-self: start; }
+.btn-primary:hover { background: var(--color-ink-950); }
+.status-badge { white-space: nowrap; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 3px 10px; }
+.s-pending_review { background: #fff1d6; color: #8a5a00; }
+.s-approved { background: #e0f2fe; color: #075985; }
+.s-rejected { background: #fee2e2; color: #991b1b; }
+.s-published { background: #dcfce7; color: #166534; }
+.s-archived { background: #f1f1f1; color: #555; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-tabs button { border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 14px; border: 1px solid #eee7e7; background: white; }
+.admin-tabs button[aria-selected="true"] { background: var(--color-ink-950); color: white; border-color: var(--color-ink-950); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #777; padding: 10px 14px; border-bottom: 1px solid #eee7e7; }
+.admin-table td { padding: 12px 14px; border-bottom: 1px solid #f3eeee; vertical-align: top; }
+.act { border-radius: 999px; border: 1px solid #ddd; padding: 4px 12px; font-size: 13px; font-weight: 600; background: white; }
+.act:hover { background: #f6f6f6; }
+.act-approved, .act-published { border-color: #16a34a; color: #166534; }
+.act-rejected { border-color: #dc2626; color: #991b1b; }

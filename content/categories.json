@@ -1,0 +1,12 @@
+[
+  { "sport": "running", "slug": "3k", "label": "3K", "minKm": 3, "maxKm": 3 },
+  { "sport": "running", "slug": "5k", "label": "5K", "minKm": 5, "maxKm": 5 },
+  { "sport": "running", "slug": "10k", "label": "10K", "minKm": 10, "maxKm": 10 },
+  { "sport": "running", "slug": "half-marathon", "label": "Half Marathon", "minKm": 21.1, "maxKm": 21.1 },
+  { "sport": "running", "slug": "25k", "label": "25K", "minKm": 25, "maxKm": 25 },
+  { "sport": "running", "slug": "30k", "label": "30K", "minKm": 30, "maxKm": 30 },
+  { "sport": "running", "slug": "marathon", "label": "Marathon", "minKm": 42.2, "maxKm": 42.2 },
+  { "sport": "running", "slug": "ultra", "label": "Ultra", "minKm": 42.3, "maxKm": null },
+  { "sport": "running", "slug": "trail", "label": "Trail", "minKm": null, "maxKm": null },
+  { "sport": "running", "slug": "virtual", "label": "Virtual", "minKm": null, "maxKm": null }
+]

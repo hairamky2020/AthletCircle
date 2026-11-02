@@ -30,7 +30,11 @@ function load(): Run[] {
 }
 
 /** Phase 1 scope: running events in Hyderabad. */
-export const SCOPE = { sport: "running", city: "in/telangana/hyderabad", cityName: "Hyderabad" };
+export const SCOPE = { sport: "running", city: "in/telangana/hyderabad", cityName: "Hyderabad", sportName: "Running" };
+
+/** URL segments for the SEO pages, derived from the scope: /hyderabad/running-events/... */
+export const scopeParams = () => ({ city: SCOPE.city.split("/").pop()!, listing: `${SCOPE.sport}-events` });
+export const listingHref = () => { const p = scopeParams(); return `/${p.city}/${p.listing}`; };
 
 export const RUNS: Run[] = load().filter((e) => e.sport === SCOPE.sport && e.city === SCOPE.city);
 
