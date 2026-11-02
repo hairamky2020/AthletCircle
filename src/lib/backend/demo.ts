@@ -3,9 +3,10 @@
 import { RUNS } from "@/data/events";
 import type { AuditEntry, Backend, Interaction, Metrics, Role, Status, Submission, SubmissionInput, User } from "./types";
 import { canMoveTo, slugify } from "./types";
+import { getSport } from "@/data/sports";
 
 const KEY = "ac.demo.v1";
-type Db = { user: User | null; users: User[]; events: Submission[]; audit: AuditEntry[]; hits: { slug: string; kind: Interaction; device: string; at: string }[]; emails: { to: string; template: string; at: string }[] };
+type Db = { sportSchemas?: Record<string, Record<string, unknown>>; user: User | null; users: User[]; events: Submission[]; audit: AuditEntry[]; hits: { slug: string; kind: Interaction; device: string; at: string }[]; emails: { to: string; template: string; at: string }[] };
 
 function seed(): Db {
   const now = new Date().toISOString();
@@ -21,7 +22,7 @@ function seed(): Db {
       id: `e-${r.slug}`, slug: r.slug, title: r.title, sport: r.sport, city: r.city, area: r.area, venue: r.venue,
       startDate: r.date, startTime: r.startTime, distances: r.distances, registrationUrl: r.registrationUrl, websiteUrl: r.websiteUrl,
       organizerName: "Not Announced", organizerEmail: "", source: r.source, status: "published" as Status,
-      featuredRank: r.featured ? i : null, createdAt: now, updatedAt: now,
+      featuredRank: r.featured ? i : null, createdAt: now, updatedAt: now, details: r.details,
     })),
     audit: [], hits: [], emails: [],
   };
@@ -94,6 +95,15 @@ export const demoBackend: Backend = {
       if (!e || e.status !== "published") throw new Error("Only published events can be featured");
       e.featuredRank = rank; log(db, rank === null ? "unfeature" : "feature", e.title);
     });
+  },
+  async updateDetails(id, details) {
+    mutate((db) => { const u = need(db, (r) => r === "editor" || r === "super_admin"); void u;
+      const e = db.events.find((x) => x.id === id); if (!e) throw new Error("Not found");
+      e.details = details; e.updatedAt = new Date().toISOString(); log(db, "Edited details", e.title); });
+  },
+  async sportSchema(slug) { return load().sportSchemas?.[slug] ?? (getSport(slug)?.schema as Record<string, unknown>) ?? {}; },
+  async setSportSchema(slug, schema) {
+    mutate((db) => { need(db, (r) => r === "editor" || r === "super_admin"); db.sportSchemas = { ...db.sportSchemas, [slug]: schema }; log(db, "Edited sport fields", slug); });
   },
   async audit(limit = 100) { const db = load(); need(db, isStaff); return db.audit.slice(0, limit); },
   async users() { const db = load(); need(db, isStaff); return db.users; },

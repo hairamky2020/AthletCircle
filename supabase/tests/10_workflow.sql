@@ -23,3 +23,15 @@ select 'anon sees', count(*) from events; select count(*) as anon_audit from aud
 insert into event_interactions (event_slug, kind) values ('test-run','view');
 reset role;
 select from_status, to_status, reason from status_history;
+-- 002: organizers cannot mark details verified; staff can; history is public for published events
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+insert into events (slug,title,sport_id,city_id,start_date,source,details) select 'det-run','Det Run',(select id from sports where slug='running'),(select id from locations where path='in/telangana/hyderabad'),'2027-02-10','organizer','{"verified":["prizes"],"faqs":[{"q":"a","a":"b"}]}';
+select 'org verified ->', details->'verified', provenance from events where slug='det-run';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+update events set details = jsonb_set(details,'{verified}','["prizes"]') where slug='test-run';
+select 'ed verified ->', details->'verified' from events where slug='test-run';
+update sports set field_schema='{"properties":{"route":{"type":"string"}}}' where slug='running';
+select 'sport schema ->', field_schema->'properties' from sports where slug='running';
+reset role; set role anon; set request.jwt.claim.sub = '';
+select 'history rows', count(*) from event_history('test-run');
+reset role;

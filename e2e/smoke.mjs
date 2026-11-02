@@ -95,7 +95,11 @@ async function run(label, ctxOpts) {
   check(await page.getByText(/straight-line/).first().isVisible(), "distance from you");
   await shot("run");
   check(await page.getByRole("button", { name: /Registered|I’m registered/ }).isVisible(), "run page has My runs toggle");
-  await page.locator("main nav").getByRole("link", { name: "Runs", exact: true }).click(); await page.waitForLoadState(); await settle();
+  check((await page.locator('a[href^="https://wa.me/?text="]').count()) >= 1, "WhatsApp share link");
+  for (const h of ["Categories and registration fees", "Prize money and awards", "Event schedule", "Participant facilities", "Eligibility and rules", "Organizer", "Gallery and videos", "Frequently asked questions"])
+    check(await page.getByRole("heading", { name: h, exact: true }).isVisible(), `section: ${h}`);
+  { const mob = label === "mobile"; check(await page.locator(mob ? ".ed-mobile-cta" : ".ed-panel").isVisible(), mob ? "mobile registration bar" : "registration panel"); }
+  await page.locator(".ed-crumbs").getByRole("link", { name: "Running events", exact: true }).click(); await page.waitForLoadState(); await settle();
   check(/^\/(#upcoming)?$/.test(pathOf(page.url())), `breadcrumb back to runs (${pathOf(page.url())})`);
 
   await page.goto(url("/hyderabad/running-events/premiethon-2026")); await settle();

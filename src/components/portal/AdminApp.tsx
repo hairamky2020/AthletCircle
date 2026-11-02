@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { canMoveTo, STATUS_LABEL, type AuditEntry, type Metrics, type Role, type Status, type Submission, type User } from "@/lib/backend";
 import { formatLong } from "@/lib/runs";
 import { DemoNote, SignIn, StatusBadge, useBackend } from "./shared";
+import { detailsSchema, emptyDetails } from "@/data/details";
+import { topSports } from "@/data/sports";
 
-const TABS = ["Review queue", "All events", "Metrics", "Users & roles", "Audit trail"] as const;
+const TABS = ["Review queue", "All events", "Sport fields", "Metrics", "Users & roles", "Audit trail"] as const;
 type Tab = (typeof TABS)[number];
 const ROLE_LABEL: Record<Role, string> = { organizer: "Organizer", reviewer: "Reviewer", editor: "Editor", super_admin: "Super admin" };
 
@@ -27,6 +29,7 @@ export function AdminApp() {
       <div className="mt-6">
         {tab === "Review queue" && <EventsTable role={user.role} filter="pending_review" />}
         {tab === "All events" && <EventsTable role={user.role} />}
+        {tab === "Sport fields" && <SportFieldsView role={user.role} />}
         {tab === "Metrics" && <MetricsView />}
         {tab === "Users & roles" && <UsersView me={user} />}
         {tab === "Audit trail" && <AuditView />}
@@ -48,6 +51,7 @@ function EventsTable({ role, filter }: { role: Role; filter?: Status }) {
   const [status, setStatus] = useState<Status | "">(filter ?? "");
   const { data, err, reload, setErr } = useLoad(async () => (be ? be.listEvents(status || undefined) : []), [be, status]);
   const canFeature = role === "editor" || role === "super_admin";
+  const [editing, setEditing] = useState<Submission | null>(null);
 
   async function move(e: Submission, to: Status) {
     let reason: string | undefined;
@@ -85,6 +89,7 @@ function EventsTable({ role, filter }: { role: Role; filter?: Status }) {
                       <button key={to} className={`act act-${to}`} onClick={() => move(e, to)}>{{ approved: "Approve", rejected: "Reject", published: "Publish", archived: "Archive" }[to as "approved"]}</button>
                     ))}
                     {canFeature && e.status === "published" && <button className="act" onClick={() => feature(e)}>{e.featuredRank == null ? "Feature" : "Unfeature"}</button>}
+                    {canFeature && <button className="act" onClick={() => setEditing(e)}>Edit details</button>}
                   </div></td>
                 </tr>
               ))}
@@ -92,6 +97,61 @@ function EventsTable({ role, filter }: { role: Role; filter?: Status }) {
           </table>
         </div>
       )}
+      {editing && <DetailsEditor ev={editing} onClose={() => { setEditing(null); reload(); }} />}
+    </div>
+  );
+}
+
+/** JSON editor for an event's rich details, validated against the same schema the site uses. */
+function DetailsEditor({ ev, onClose }: { ev: Submission; onClose: () => void }) {
+  const { be } = useBackend();
+  const [text, setText] = useState(JSON.stringify(ev.details ?? emptyDetails(), null, 2));
+  const [msg, setMsg] = useState("");
+  const { data: history } = useLoad<AuditEntry[]>(async () => (be ? (await be.audit(500)).filter((a) => a.target === ev.title) : []), [be, ev.title]);
+  async function save() {
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { setMsg("That isn't valid JSON."); return; }
+    const r = detailsSchema.safeParse(parsed);
+    if (!r.success) { setMsg(r.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")); return; }
+    try { await be!.updateDetails(ev.id, r.data); onClose(); } catch (x) { setMsg((x as Error).message); }
+  }
+  return (
+    <div className="details-editor panel mt-6" role="dialog" aria-label={`Edit details for ${ev.title}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">Details · {ev.title}</h3><button className="act" onClick={onClose}>Close</button></div>
+      <p className="mt-1 text-sm text-ink-500">Only enter what has been announced. Leave anything unknown out and the page shows “Not Announced”. List sections our team checked against an official source in <code>verified</code>; everything else shows as “From the organizer”.</p>
+      <textarea aria-label="Event details JSON" className="field mt-3 h-80 w-full font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} />
+      {msg && <p className="mt-2 text-sm text-red-600" role="alert">{msg}</p>}
+      <div className="mt-3 flex gap-2"><button className="btn-primary" onClick={save}>Save details</button></div>
+      <h4 className="mt-6 font-bold">Update history</h4>
+      {!history?.length ? <p className="text-sm text-ink-500">No changes recorded yet.</p> : (
+        <ul className="mt-2 space-y-1 text-sm">{history.map((h, i) => <li key={i}>{new Date(h.at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · {h.actor} · {h.action}</li>)}</ul>
+      )}
+    </div>
+  );
+}
+
+/** Admins add or change sport-specific fields here; event pages render them without code changes. */
+function SportFieldsView({ role }: { role: Role }) {
+  const { be } = useBackend();
+  const [slug, setSlug] = useState("running");
+  const [text, setText] = useState("");
+  const [msg, setMsg] = useState("");
+  const canEdit = role === "editor" || role === "super_admin";
+  useEffect(() => { if (be) be.sportSchema(slug).then((s) => setText(JSON.stringify(s, null, 2))).catch((e) => setMsg(e.message)); }, [be, slug]);
+  async function save() {
+    let parsed: Record<string, unknown>;
+    try { parsed = JSON.parse(text); } catch { setMsg("That isn't valid JSON."); return; }
+    if (typeof parsed !== "object" || !parsed || typeof (parsed as { properties?: unknown }).properties !== "object") { setMsg("Needs a \"properties\" object, e.g. {\"properties\": {\"overs\": {\"type\": \"integer\", \"title\": \"Overs\"}}}"); return; }
+    try { await be!.setSportSchema(slug, parsed); setMsg("Saved."); } catch (x) { setMsg((x as Error).message); }
+  }
+  return (
+    <div className="panel">
+      <p className="text-sm text-ink-500">Each sport has its own extra fields (for example running: route, cut-off time; cricket: overs, fixtures). Fields have a <code>title</code> and a <code>type</code> (string, number, integer, boolean, or array with <code>items.enum</code>). Event details store values under <code>sportFields</code> using the same keys.</p>
+      <label className="mt-3 block text-sm font-semibold" htmlFor="sf-sport">Sport</label>
+      <select id="sf-sport" className="field mt-1" value={slug} onChange={(e) => { setSlug(e.target.value); setMsg(""); }}>{topSports().map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}</select>
+      <textarea aria-label="Sport fields JSON" className="field mt-3 h-72 w-full font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} readOnly={!canEdit} spellCheck={false} />
+      {msg && <p className="mt-2 text-sm" role="status">{msg}</p>}
+      {canEdit ? <button className="btn-primary mt-3" onClick={save}>Save fields</button> : <p className="mt-2 text-sm text-ink-500">Editors and super admins can change these.</p>}
     </div>
   );
 }

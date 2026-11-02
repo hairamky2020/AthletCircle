@@ -19,7 +19,7 @@ const toSubmission = (r: Row): Submission => ({
   registrationUrl: r.registration_url ?? undefined, websiteUrl: r.website_url ?? undefined, feeNote: r.fee_note ?? undefined, prizeNote: r.prize_note ?? undefined,
   description: r.description ?? undefined, organizerName: r.organizer?.name ?? "Not Announced", organizerEmail: r.organizer?.email ?? "",
   source: r.source, status: r.status, rejectReason: r.reject_reason ?? undefined, featuredRank: r.featured_rank, submittedBy: r.submitted_by,
-  createdAt: r.created_at, updatedAt: r.updated_at,
+  createdAt: r.created_at, updatedAt: r.updated_at, details: r.details ?? undefined,
 });
 
 async function ids(input: SubmissionInput) {
@@ -84,6 +84,9 @@ export const supabaseBackend: Backend = {
       missingDetails: m.missing_details, emails: m.emails, dbBytes: m.db_bytes,
     };
   },
+  async updateDetails(id, details) { check(await sb().from("events").update({ details }).eq("id", id).select("id").single()); },
+  async sportSchema(slug) { return ((check(await sb().from("sports").select("field_schema").eq("slug", slug).single()) as Row).field_schema ?? {}); },
+  async setSportSchema(slug, schema) { check(await sb().from("sports").update({ field_schema: schema }).eq("slug", slug).select("id").single()); },
   track(slug, kind) {
     void sb().from("event_interactions").insert({ event_slug: slug, kind, device: matchMedia("(max-width: 768px)").matches ? "mobile" : "desktop" });
   },

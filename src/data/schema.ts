@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { detailsSchema } from "./details";
 
 // Event records live in content/events.json and are validated at build time:
 // a bad record fails the build instead of showing wrong information.
@@ -31,6 +32,9 @@ export const eventSchema = z.object({
   note: z.string().optional(),
   source: z.string().min(2),                        // where this listing came from
   added: isoDate,
+  updated: isoDate.optional(),                      // last time any detail changed
+  provenance: z.enum(["public", "organizer"]).default("public"), // public announcements vs organizer submission
+  details: detailsSchema.default({}),
 });
 
 export type EventInput = z.input<typeof eventSchema>;

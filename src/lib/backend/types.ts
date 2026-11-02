@@ -1,5 +1,6 @@
 // One interface, two adapters: Supabase (real) and Demo (in-browser, for trying the flows
 // before the Supabase project exists). Pages only talk to this interface.
+import type { EventDetails } from "@/data/details";
 
 export type Role = "organizer" | "reviewer" | "editor" | "super_admin";
 export type Status = "pending_review" | "approved" | "rejected" | "published" | "archived";
@@ -34,9 +35,10 @@ export type Submission = {
   submittedBy?: string;
   createdAt: string;
   updatedAt: string;
+  details?: EventDetails;
 };
 
-export type SubmissionInput = Omit<Submission, "id" | "slug" | "status" | "rejectReason" | "featuredRank" | "submittedBy" | "createdAt" | "updatedAt">;
+export type SubmissionInput = Omit<Submission, "id" | "slug" | "status" | "rejectReason" | "featuredRank" | "submittedBy" | "createdAt" | "updatedAt" | "details">;
 
 export type AuditEntry = { at: string; actor: string; action: string; target: string; detail?: string };
 export type Interaction = "view" | "register_click" | "calendar_add" | "share" | "save" | "ad_click";
@@ -69,6 +71,9 @@ export interface Backend {
   users(): Promise<User[]>;
   setRole(userId: string, role: Role): Promise<void>;
   metrics(from: string, to: string): Promise<Metrics>;
+  updateDetails(id: string, details: EventDetails): Promise<void>;   // editor / super admin
+  sportSchema(slug: string): Promise<Record<string, unknown>>;
+  setSportSchema(slug: string, schema: Record<string, unknown>): Promise<void>; // editor / super admin
   // public
   track(slug: string, kind: Interaction): void;
 }
