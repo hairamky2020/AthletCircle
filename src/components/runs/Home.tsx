@@ -1,5 +1,6 @@
 "use client";
 
+import { parseQuery, matchesParsed } from "@/lib/nlsearch";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Run } from "@/data/schema";
@@ -85,13 +86,6 @@ function inWindow(date: string, when: When, now: Date) {
 }
 
 /** A run matches when EVERY word typed appears in its name, area, venue, type, distances or month. */
-function matchesWords(r: Run, words: string[]) {
-  if (!words.length) return true;
-  const d = dayParts(r.date);
-  const hay = `${r.title} ${r.area ?? ""} ${r.venue ?? ""} ${SHORT_KIND[r.kind]} ${r.distances.join(" ")} ${d.month} ${d.year}`.toLowerCase();
-  return words.every((w) => hay.includes(w));
-}
-
 export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const [now, setNow] = useState(() => new Date(builtAt));
   const [f, setF] = useState<Filters>(EMPTY);
@@ -114,20 +108,17 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
   const nearOn = f.near && !!origin;
 
   const shown = useMemo(() => {
-    const words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    let list = upcoming.filter((r) => matchesWords(r, words) && inWindow(r.date, f.when, now) && (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
+    const pq = parseQuery(f.q, now);
+    let list = upcoming.filter((r) => matchesParsed(r, pq, (d) => inWindow(d, "weekend", now)) && inWindow(r.date, f.when, now) && (!f.kind || !!CATS.find((c) => c.key === f.kind)?.match(r)));
     if (nearOn) list = [...list].sort((a, b) => (distanceOf(a) ?? Infinity) - (distanceOf(b) ?? Infinity));
     return list;
   }, [upcoming, f, now, nearOn, origin?.lat, origin?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cats = CATS.map((c) => ({ ...c, n: upcoming.filter(c.match).length }));
   const saved = runs.filter((r) => mine.has(r.slug));
-  const featured = (upcoming.filter((r) => r.featured).length ? upcoming.filter((r) => r.featured) : upcoming).slice(0, 6);
   const filtered = Boolean(f.q || f.when || f.kind || f.near);
   const nearest = origin ? [...upcoming].filter((r) => r.location).sort((a, b) => distanceOf(a)! - distanceOf(b)!).slice(0, 3) : [];
   const countBySport = (slug: string) => upcoming.filter((r) => r.sport === slug).length;
-  const strip = useRef<HTMLUListElement>(null);
-  const scrollStrip = (dir: number) => strip.current?.scrollBy({ left: dir * strip.current.clientWidth * 0.9, behavior: "smooth" });
 
   async function nearMe() {
     const l = origin ?? (await detect());
@@ -145,7 +136,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
             <p className="hero3-sub">Discover sporting events, explore opportunities near you and connect with the sporting community.</p>
             <form className="searchbar" role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>
               <label className="sr-only" htmlFor="q">Search events</label>
-              <input id="q" type="search" className="field" value={f.q} onChange={(e) => update({ q: e.target.value })} placeholder="Search events or areas" aria-label="Search runs or areas" />
+              <input id="q" type="search" className="field" value={f.q} onChange={(e) => update({ q: e.target.value })} placeholder="Try: 10K runs in December under ₹800" aria-label="Search runs or areas" />
               <label className="sr-only" htmlFor="sport">Sport</label>
               <select id="sport" className="field" defaultValue={SCOPE.sport} aria-label="Sport">
                 {SPORT_LIST.filter((s) => countBySport(s.slug)).map((s) => <option key={s.slug} value={s.slug} disabled={!countBySport(s.slug)}>{s.name}{countBySport(s.slug) ? "" : " (soon)"}</option>)}
@@ -156,7 +147,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
               </select>
               <button className="btn-primary" type="submit">Search</button>
             </form>
-            {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "event matches" : "events match"} “{f.q.trim()}” · <a href="#upcoming">see results ↓</a></> : <>No upcoming events match “{f.q.trim()}”.</>}</p>}
+            {f.q.trim() && <p className="search-hint" aria-live="polite">{shown.length ? <>{shown.length} {shown.length === 1 ? "run" : "runs"}{parseQuery(f.q, now).summary.length ? <> · {parseQuery(f.q, now).summary.join(" · ")}</> : <> matching “{f.q.trim()}”</>} · <a href="#upcoming">see results ↓</a></> : <>No upcoming events match “{f.q.trim()}”.</>}</p>}
             <div className="hero-quick" aria-label="Quick picks">
               <button type="button" className="quick-chip" onClick={() => { update({ when: "weekend" }); document.getElementById("upcoming")?.scrollIntoView({ behavior: "smooth" }); }}>This weekend</button>
               <a className="quick-chip" href="#nearby">Near me</a>
@@ -171,22 +162,6 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           </svg>
         </div>
       </section>
-
-      {/* Featured */}
-      {featured.length > 0 && (
-        <section className="wrap section" aria-labelledby="featured-h">
-          <div className="section-head">
-            <h2 id="featured-h" className="h2">Featured events</h2>
-            <div className="hidden gap-2 sm:flex">
-              <button className="carousel-btn" onClick={() => scrollStrip(-1)} aria-label="Previous featured events">‹</button>
-              <button className="carousel-btn" onClick={() => scrollStrip(1)} aria-label="Next featured events">›</button>
-            </div>
-          </div>
-          <ul ref={strip} className="featured-strip">
-            {featured.map((r) => <li key={r.slug}><EventCard run={r} now={now} featured /></li>)}
-          </ul>
-        </section>
-      )}
 
       {/* Upcoming events */}
       <section id="upcoming" className="wrap section scroll-mt-20" aria-labelledby="upcoming-h">

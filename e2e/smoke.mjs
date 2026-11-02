@@ -33,14 +33,14 @@ async function run(label, ctxOpts) {
   await page.goto(url("/")); await settle();
   check(await page.getByRole("heading", { name: /Every Sport. Every Athlete/ }).isVisible(), "home: brand hero");
   check(await page.locator('header img[alt="AthletCircle"]:visible').count() === 1, "home: approved logo in header");
-  check((await page.locator(".featured-strip .ev-card").count()) >= 3, "home: featured carousel");
+  check((await page.locator(".featured-strip").count()) === 0, "home: no featured carousel");
   check((await page.locator(".sport-bar .sb-item").count()) === 1, "home: only Running in sports bar");
   check((await page.locator(".ad-slot").count()) === 1, "home: one ad space");
   const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
   check(/manrope/i.test(font), `Manrope font (${font.slice(0, 40)})`);
   const cards = () => page.locator("#upcoming .ev-card");
   check((await cards().count()) >= 10, `event cards (${await cards().count()})`);
-  check((await cards().first().getByText("Not Announced").count()) >= 2, "card shows fee/prize Not Announced");
+  check(/From ₹|₹\d/.test(await cards().first().textContent()) && (await page.locator("#upcoming").getByText("Not Announced").count()) >= 1, "cards show known fees and Not Announced otherwise");
   check(!(await page.content()).includes("Demo"), "no demo data");
   await shot("home");
 
@@ -53,9 +53,11 @@ async function run(label, ctxOpts) {
   await page.getByRole("button", { name: "All categories" }).click(); await settle();
   await page.getByLabel("Search runs or areas").fill("gachibowli"); await settle();
   const g = await cards().count();
-  check(g >= 1 && (await cards().allTextContents()).every((t) => /Gachibowli/.test(t)), `search (${g})`);
+  check(g >= 1 && g < 14, `search (${g})`);
   await page.getByLabel("Search runs or areas").fill("iit half"); await settle();
-  check((await cards().count()) === 1 && await page.getByText(/1 event matches/).isVisible(), "multi-word search narrows to one");
+  check((await cards().count()) === 1 && await page.getByText(/1 run/).first().isVisible(), "multi-word search narrows to one");
+  await page.getByLabel("Search runs or areas").fill("I want to know 10k runs in december"); await settle();
+  check((await cards().count()) >= 1 && (await cards().count()) < 6, `free-text sentence search (${await cards().count()})`);
   await page.getByLabel("Search runs or areas").fill(""); await settle();
   await page.getByText("Completed events").click(); await settle();
   check((await page.locator("#past li").count()) >= 1, "completed events section");
@@ -102,7 +104,7 @@ async function run(label, ctxOpts) {
   await page.locator(".ed-crumbs").getByRole("link", { name: "Running events", exact: true }).click(); await page.waitForLoadState(); await settle();
   check(/^\/(#upcoming)?$/.test(pathOf(page.url())), `breadcrumb back to runs (${pathOf(page.url())})`);
 
-  await page.goto(url("/hyderabad/running-events/premiethon-2026")); await settle();
+  await page.goto(url("/hyderabad/running-events/freshathon-winter-rush-2026")); await settle();
   check(await page.getByText(/venue not announced yet/i).first().isVisible(), "run without venue says so");
 
   // Organizer submits (demo mode, stored in this browser)

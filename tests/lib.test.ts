@@ -61,11 +61,10 @@ describe("run data", () => {
     expect(RUNS[0].title).toBe("Signathon");
     expect(RUNS.at(-1)!.date).toBe("2027-03-07");
   });
-  it("never invents links, times or distances (except the one listing that announced them)", () => {
-    for (const r of RUNS.filter((x) => x.slug !== "hyderabad-city-slam-2027")) {
-      expect(r.registrationUrl).toBeUndefined();
-      expect(r.startTime).toBeUndefined();
-      expect(r.distances).toEqual([]);
+  it("only carries links, times or distances that cite a public source", () => {
+    for (const r of RUNS.filter((x) => x.registrationUrl || x.startTime || x.distances.length)) {
+      expect(r.source).toMatch(/ifinish|endorfin|indiarunning|runnersduniya|listing|calendar/i);
+      if (r.registrationUrl) expect(r.registrationUrl).toMatch(/^https:\/\/(ifinish\.in|registrations\.indiarunning\.com|www\.endorfin\.run)\//);
     }
   });
   it("marks area pins as approximate", () => {
