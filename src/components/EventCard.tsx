@@ -34,7 +34,7 @@ export function EventCard({ run, now, away, featured = false }: { run: Run; now:
       </div>
       <div className="ev-body">
         <p className="label">{relativeDay(run.date, now)} · {d.weekday}, {d.day} {d.month} {d.year}</p>
-        <h3 className="ev-title"><Link href={runHref(run.slug)} className="hover:text-blue">{run.title}</Link></h3>
+        <h3 className="ev-title"><Link href={runHref(run.slug)} className="ev-link hover:text-blue">{run.title}</Link></h3>
         <p className="ev-meta">{run.venue ?? placeLabel(run) ?? "Venue Not Announced"}{city ? `, ${city}` : ""}{away != null && <> · <b className="text-navy">{formatDistance(away)}</b> straight-line</>}</p>
         <div className="ev-cats" aria-label="Categories">
           {run.distances.length ? run.distances.map((x) => <span key={x} className="badge">{x}</span>) : <span className="badge">Categories Not Announced</span>}

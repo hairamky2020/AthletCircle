@@ -204,6 +204,9 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 /* ---------- Event card (one design for every sport) ---------- */
 .ev-card { display: flex; flex-direction: column; height: 100%; overflow: hidden; border-radius: var(--radius-card); background: var(--color-white); border: 1px solid var(--color-border); box-shadow: var(--shadow-card); transition: box-shadow .2s, transform .2s; }
 .ev-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.ev-card { position: relative; cursor: pointer; }
+.ev-link::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.ev-card .btn-secondary, .ev-card .save-btn { position: relative; z-index: 2; }
 .ev-banner { position: relative; height: 132px; background: color-mix(in srgb, var(--sport) 12%, white); border-bottom: 3px solid var(--sport); overflow: hidden; }
 .ev-banner img { width: 100%; height: 100%; object-fit: cover; }
 .ev-banner .ev-banner-ic { position: absolute; right: 14px; bottom: 10px; width: 64px; height: 64px; color: var(--sport); opacity: .9; }
