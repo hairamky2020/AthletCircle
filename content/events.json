@@ -44,15 +44,6 @@
     "kind": "community"
   },
   {
-    "slug": "ethnic-run-2026",
-    "title": "Ethnic Run",
-    "date": "2026-11-01",
-    "area": "Rajeev Nagar",
-    "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30",
-    "kind": "theme"
-  },
-  {
     "slug": "halloween-run-2026",
     "title": "Halloween Run",
     "date": "2026-11-01",
@@ -60,6 +51,90 @@
     "source": "AthletCircle running calendar, Oct 2026",
     "added": "2026-10-30",
     "kind": "theme"
+  },
+  {
+    "slug": "ethnic-run-2026",
+    "title": "Ethnic Run",
+    "date": "2026-11-15",
+    "area": "Rajeev Nagar",
+    "source": "endorfin.run / ifinish.in listing ERun26",
+    "added": "2026-10-30",
+    "kind": "theme",
+    "startTime": "06:30",
+    "venue": "Rajeev Nagar",
+    "distances": [
+      "2K",
+      "3K",
+      "5K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/ERun26",
+    "note": "Date per the organizer’s registration listing (15 Nov 2026). Registration closes 13 Nov.",
+    "details": {
+      "reportingTime": "05:45",
+      "categories": [
+        {
+          "name": "Fun Run",
+          "fee": "₹400",
+          "distance": "2K / 3K"
+        },
+        {
+          "name": "Fitness Run",
+          "fee": "₹500",
+          "distance": "5K"
+        }
+      ],
+      "awards": [
+        "Best Dressed Male",
+        "Best Dressed Female"
+      ],
+      "facilities": [
+        "medal",
+        "breakfast",
+        "bib",
+        "water"
+      ],
+      "organizer": {
+        "name": "SS Empire"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
+  },
+  {
+    "slug": "premiethon-2026",
+    "title": "Premiethon 2026",
+    "date": "2026-11-15",
+    "source": "endorfin.run / ifinish.in listing PRE_26",
+    "added": "2026-10-30",
+    "kind": "community",
+    "startTime": "05:30",
+    "venue": "T-Works",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/PRE_26",
+    "note": "Date per the organizer’s registration listing (15 Nov 2026). Registration closes 10 Nov.",
+    "details": {
+      "categories": [
+        {
+          "name": "3K Hope Run"
+        },
+        {
+          "name": "5K Community Run"
+        },
+        {
+          "name": "10K Champion Run"
+        }
+      ],
+      "overview": "Fee listed from ₹500.",
+      "organizer": {
+        "name": "The Extra Mile Foundation"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "rehabathon-2026",
@@ -87,18 +162,108 @@
       "precision": "area"
     },
     "featured": true,
-    "note": "Location taken from the event name (IIT Hyderabad campus). Confirm the start point with the organiser.",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "note": "3rd edition. Registration closes 8 Nov.",
+    "source": "endorfin.run, ifinish.in (IITHHM_2026), The Hans India",
     "added": "2026-10-30",
-    "kind": "half"
-  },
-  {
-    "slug": "premiethon-2026",
-    "title": "Premiethon 2026",
-    "date": "2026-11-22",
-    "source": "AthletCircle running calendar, Oct 2026",
-    "added": "2026-10-30",
-    "kind": "community"
+    "kind": "half",
+    "startTime": "06:15",
+    "venue": "IIT Hyderabad Sports & Cultural Complex, Kandi, Sangareddy",
+    "distances": [
+      "5K",
+      "10K",
+      "21.1K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/IITHHM_2026",
+    "details": {
+      "overview": "Fee listed from ₹699. Title sponsor: Swan Turbine Services.",
+      "categories": [
+        {
+          "name": "Half Marathon",
+          "distance": "21.1K",
+          "note": "Timed"
+        },
+        {
+          "name": "10K",
+          "distance": "10K",
+          "note": "Timed"
+        },
+        {
+          "name": "5K",
+          "distance": "5K",
+          "note": "Timed"
+        },
+        {
+          "name": "5K Fun Run",
+          "distance": "5K",
+          "note": "Not timed"
+        }
+      ],
+      "prizes": [
+        {
+          "category": "Half Marathon",
+          "places": [
+            {
+              "place": "1st",
+              "award": "₹10,000"
+            },
+            {
+              "place": "2nd",
+              "award": "₹7,000"
+            },
+            {
+              "place": "3rd",
+              "award": "₹5,000"
+            }
+          ],
+          "note": "Men and women"
+        },
+        {
+          "category": "10K",
+          "places": [
+            {
+              "place": "1st",
+              "award": "₹10,000"
+            },
+            {
+              "place": "2nd",
+              "award": "₹7,000"
+            },
+            {
+              "place": "3rd",
+              "award": "₹5,000"
+            }
+          ],
+          "note": "Men and women"
+        },
+        {
+          "category": "5K",
+          "places": [
+            {
+              "place": "1st",
+              "award": "₹10,000"
+            },
+            {
+              "place": "2nd",
+              "award": "₹7,000"
+            },
+            {
+              "place": "3rd",
+              "award": "₹5,000"
+            }
+          ],
+          "note": "Men and women"
+        }
+      ],
+      "eligibility": [
+        "Open to students, staff, alumni and the public"
+      ],
+      "organizer": {
+        "name": "IIT Hyderabad Runners Club",
+        "email": "info@iithydrunnersclub.com"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "forest-run-uppal-2026",
@@ -110,17 +275,101 @@
       "lng": 78.5591,
       "precision": "area"
     },
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run / ifinish.in listing FTR2026",
     "added": "2026-10-30",
-    "kind": "community"
+    "kind": "community",
+    "venue": "Bhagyanagara Nandanavanam, Narapally (Warangal Highway)",
+    "distances": [
+      "5K",
+      "10K",
+      "16K",
+      "24K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/FTR2026",
+    "note": "Expo on 28 Nov, 10 AM–6 PM. Registration closes 26 Nov.",
+    "details": {
+      "overview": "Fee listed from ₹499.",
+      "categories": [
+        {
+          "name": "24K",
+          "startTime": "05:45",
+          "note": "Not timed"
+        },
+        {
+          "name": "16K",
+          "startTime": "06:00",
+          "note": "Not timed"
+        },
+        {
+          "name": "10K",
+          "startTime": "06:15",
+          "note": "Not timed"
+        },
+        {
+          "name": "5K Fun / Family",
+          "startTime": "07:00"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "medal",
+        "breakfast",
+        "medical"
+      ],
+      "organizer": {
+        "name": "Uppal Runners"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "run-for-child-health-2026",
     "title": "Run for Child Health",
     "date": "2026-11-29",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run / ifinish.in listing RFCH26",
     "added": "2026-10-30",
-    "kind": "cause"
+    "kind": "cause",
+    "startTime": "06:00",
+    "venue": "Sanjeevaiah Park, Necklace Road",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/RFCH26",
+    "note": "In aid of SAHARA Health & Development Society. Registration closes 27 Nov.",
+    "details": {
+      "overview": "Fee listed from ₹699.",
+      "categories": [
+        {
+          "name": "10K",
+          "note": "Timed"
+        },
+        {
+          "name": "5K",
+          "note": "Timed"
+        },
+        {
+          "name": "3K Fun Run"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "medal",
+        "certificate",
+        "refreshments",
+        "water",
+        "medical",
+        "photos"
+      ],
+      "organizer": {
+        "name": "Global Events",
+        "phone": "8247259061"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "sankalp-suraksha-run-2026",
@@ -133,17 +382,70 @@
       "precision": "area"
     },
     "featured": true,
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run / ifinish.in listing SSR26",
     "added": "2026-10-30",
-    "kind": "cause"
+    "kind": "cause",
+    "startTime": "05:30",
+    "venue": "Raheja Mindspace",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "registrationUrl": "https://ifinish.in/running/SSR26",
+    "note": "2nd edition. Registration closes around 30 Nov–1 Dec.",
+    "details": {
+      "categories": [
+        {
+          "name": "10K",
+          "fee": "₹899",
+          "note": "Timed",
+          "ageGroup": "18+"
+        },
+        {
+          "name": "5K Adults",
+          "fee": "₹699"
+        },
+        {
+          "name": "5K Kids",
+          "fee": "₹499",
+          "ageGroup": "6–15"
+        },
+        {
+          "name": "3K",
+          "fee": "₹499",
+          "note": "Adults and kids"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "bib",
+        "medal",
+        "breakfast",
+        "refreshments"
+      ],
+      "organizer": {
+        "name": "Sankalp For a Good Cause",
+        "email": "hema@sathguru.com",
+        "phone": "9849053386"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "freshathon-winter-rush-2026",
     "title": "Freshathon Winter Rush: Paint the City Red",
     "date": "2026-12-13",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run listing",
     "added": "2026-10-30",
-    "kind": "theme"
+    "kind": "theme",
+    "websiteUrl": "https://www.endorfin.run/running-events/f33dce02-4ca2-4cc9-bab3-6ed4d892852c",
+    "details": {
+      "overview": "Fee listed from ₹599."
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "telangana-ultra-marathon-2026",
@@ -155,15 +457,21 @@
       "lng": 78.3,
       "precision": "area"
     },
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run / ifinish.in listing TUM26",
     "added": "2026-10-30",
-    "kind": "ultra"
+    "kind": "ultra",
+    "registrationUrl": "https://ifinish.in/running/TUM26",
+    "details": {
+      "overview": "Edition 2.0. Fee listed from ₹799."
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "hyderabad-city-slam-2027",
     "title": "Hyderabad City Slam: 21.1K Winter Run",
     "date": "2027-01-03",
-    "source": "ifinish.in event banner, 30 Oct 2026",
+    "source": "endorfin.run / ifinish.in listing HCSWR_27_01",
     "added": "2026-10-30",
     "kind": "half",
     "distances": [
@@ -172,38 +480,157 @@
       "5K"
     ],
     "note": "Venue to be announced. A virtual option (21.1K, 10K, 5K) is also listed.",
-    "websiteUrl": "https://ifinish.in/"
+    "websiteUrl": "https://ifinish.in/",
+    "registrationUrl": "https://ifinish.in/running/HCSWR_27_01",
+    "details": {
+      "overview": "21.1K Winter Run. Fee listed from ₹699."
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "telangana-half-marathon-2027",
     "title": "Telangana Half Marathon 2027 (2nd edition)",
     "date": "2027-01-24",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "runnersduniya.com, indiarunning.com",
     "added": "2026-10-30",
-    "kind": "half"
+    "kind": "half",
+    "venue": "Gachibowli Stadium",
+    "distances": [
+      "5K",
+      "10K",
+      "21.1K"
+    ],
+    "registrationUrl": "https://registrations.indiarunning.com/telangana_half_marathon_2k27_33872",
+    "note": "2nd edition. Other listings show different fees; confirm on the registration page.",
+    "details": {
+      "categories": [
+        {
+          "name": "5K",
+          "fee": "₹799",
+          "note": "Timed"
+        },
+        {
+          "name": "10K",
+          "fee": "₹999"
+        },
+        {
+          "name": "21.1K",
+          "fee": "₹1,199"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "medal",
+        "certificate",
+        "refreshments",
+        "breakfast",
+        "medical",
+        "water",
+        "photos"
+      ]
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "hare-krishna-run-2027",
     "title": "Hare Krishna Run 2027 (2nd edition)",
     "date": "2027-02-07",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "indiarunning.com",
     "added": "2026-10-30",
-    "kind": "community"
+    "kind": "community",
+    "venue": "Hussain Sagar / Necklace Road",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "registrationUrl": "https://registrations.indiarunning.com/hare_krishna_run_2027__2nd_edition_9587",
+    "note": "2nd edition. Start time not clearly announced.",
+    "details": {
+      "categories": [
+        {
+          "name": "3K Sankirtan Walk",
+          "fee": "₹699"
+        },
+        {
+          "name": "5K",
+          "fee": "₹799",
+          "note": "Not timed"
+        },
+        {
+          "name": "5K",
+          "fee": "₹999",
+          "note": "Timed"
+        },
+        {
+          "name": "10K",
+          "fee": "₹1,099",
+          "note": "Timed"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "medal",
+        "bib",
+        "certificate",
+        "breakfast"
+      ],
+      "organizer": {
+        "name": "ISKCON Abids"
+      }
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "finrun-hyderabad-2027",
     "title": "FinRun Hyderabad 2027",
     "date": "2027-02-07",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "indiarunning.com",
     "added": "2026-10-30",
-    "kind": "community"
+    "kind": "community",
+    "venue": "Gachibowli Stadium",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "registrationUrl": "https://registrations.indiarunning.com/finrun_2027_run_against_cyber_crime_33424",
+    "note": "Run against cyber crime.",
+    "details": {
+      "reportingTime": "06:00",
+      "categories": [
+        {
+          "name": "3K",
+          "fee": "₹799"
+        },
+        {
+          "name": "5K",
+          "fee": "₹999"
+        },
+        {
+          "name": "10K",
+          "fee": "To Be Confirmed"
+        }
+      ]
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   },
   {
     "slug": "womens-day-run-2027",
     "title": "International Women's Day Run",
     "date": "2027-03-07",
-    "source": "AthletCircle running calendar, Oct 2026",
+    "source": "endorfin.run listing",
     "added": "2026-10-30",
-    "kind": "theme"
+    "kind": "theme",
+    "websiteUrl": "https://www.endorfin.run/running-events/international_womens_day_run__mana_hyderabad_37854",
+    "details": {
+      "overview": "Mana Hyderabad Half Marathon. Fee listed from ₹699."
+    },
+    "updated": "2026-11-02",
+    "provenance": "public"
   }
 ]
