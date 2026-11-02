@@ -23,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-IN" className={manrope.variable}>
       <body className="min-h-screen antialiased">
+        <script dangerouslySetInnerHTML={{ __html: `if("serviceWorker"in navigator)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()});if(r.length&&window.caches)caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})})})` }} />
         <LocationProvider>
           <Header />
           <main>{children}</main>
