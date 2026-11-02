@@ -34,7 +34,7 @@ async function run(label, ctxOpts) {
   check(await page.getByRole("heading", { name: /Every Sport. Every Athlete/ }).isVisible(), "home: brand hero");
   check(await page.locator('header img[alt="AthletCircle"]:visible').count() === 1, "home: approved logo in header");
   check((await page.locator(".featured-strip .ev-card").count()) >= 3, "home: featured carousel");
-  check((await page.locator(".sports-grid .sport-card").count()) === 9, "home: explore sports (9)");
+  check((await page.locator(".sport-bar .sb-item").count()) === 1, "home: only Running in sports bar");
   check((await page.locator(".ad-slot").count()) === 1, "home: one ad space");
   const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
   check(/manrope/i.test(font), `Manrope font (${font.slice(0, 40)})`);
@@ -96,7 +96,7 @@ async function run(label, ctxOpts) {
   await shot("run");
   check(await page.getByRole("button", { name: /Registered|I’m registered/ }).isVisible(), "run page has My runs toggle");
   check((await page.locator('a[href^="https://wa.me/?text="]').count()) >= 1, "WhatsApp share link");
-  for (const h of ["Categories and registration fees", "Prize money and awards", "Event schedule", "Participant facilities", "Eligibility and rules", "Organizer", "Gallery and videos", "Frequently asked questions"])
+  for (const h of ["Event essentials", "More details"])
     check(await page.getByRole("heading", { name: h, exact: true }).isVisible(), `section: ${h}`);
   { const mob = label === "mobile"; check(await page.locator(mob ? ".ed-mobile-cta" : ".ed-panel").isVisible(), mob ? "mobile registration bar" : "registration panel"); }
   await page.locator(".ed-crumbs").getByRole("link", { name: "Running events", exact: true }).click(); await page.waitForLoadState(); await settle();

@@ -10,9 +10,8 @@ import { useMyRuns } from "@/lib/myRuns";
 import { dayParts, groupByMonth, isPast, placeLabel, runHref, type Kind } from "@/lib/runs";
 import { CalendarGrid } from "./CalendarGrid";
 import { EventCard } from "@/components/EventCard";
-import { SportIcon, SPORT_LIST } from "@/components/SportIcon";
-import { sportColour } from "@/lib/brand";
-import { SCOPE, listingHref } from "@/data/events";
+import { SPORT_LIST } from "@/components/SportIcon";
+import { SCOPE } from "@/data/events";
 import { AdSlot } from "./AdSlot";
 
 /*
@@ -149,7 +148,7 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
               <input id="q" type="search" className="field" value={f.q} onChange={(e) => update({ q: e.target.value })} placeholder="Search events or areas" aria-label="Search runs or areas" />
               <label className="sr-only" htmlFor="sport">Sport</label>
               <select id="sport" className="field" defaultValue={SCOPE.sport} aria-label="Sport">
-                {SPORT_LIST.map((s) => <option key={s.slug} value={s.slug} disabled={!countBySport(s.slug)}>{s.name}{countBySport(s.slug) ? "" : " (soon)"}</option>)}
+                {SPORT_LIST.filter((s) => countBySport(s.slug)).map((s) => <option key={s.slug} value={s.slug} disabled={!countBySport(s.slug)}>{s.name}{countBySport(s.slug) ? "" : " (soon)"}</option>)}
               </select>
               <label className="sr-only" htmlFor="when">Date</label>
               <select id="when" className="field" value={f.when} onChange={(e) => update({ when: e.target.value as When })} aria-label="Date">
@@ -188,29 +187,6 @@ export function Home({ runs, builtAt }: { runs: Run[]; builtAt: string }) {
           </ul>
         </section>
       )}
-
-      {/* Explore sports */}
-      <section className="wrap section" aria-labelledby="sports-h">
-        <div className="section-head"><h2 id="sports-h" className="h2">Explore sports</h2><p>Running is live in {SCOPE.cityName}. More sports are on the way.</p></div>
-        <ul className="sports-grid">
-          {SPORT_LIST.map((s) => {
-            const n = countBySport(s.slug);
-            return (
-              <li key={s.slug}>
-                {n ? (
-                  <Link href={listingHref()} className="sport-card is-live" style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
-                    <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>{n} events</small>
-                  </Link>
-                ) : (
-                  <div className="sport-card is-soon" aria-label={`${s.name}: coming soon`} style={{ "--sport": sportColour(s.slug) } as React.CSSProperties}>
-                    <span className="sport-ic"><SportIcon sport={s.slug} /></span>{s.name}<small>Coming soon</small>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
 
       {/* Upcoming events */}
       <section id="upcoming" className="wrap section scroll-mt-20" aria-labelledby="upcoming-h">

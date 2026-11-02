@@ -632,3 +632,29 @@ h1, .h1 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; line-height: 1.
 .ed-m-status { font-size: 12px; font-weight: 700; }
 .ed-m-wa { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #25D366; color: #073B1E; flex-shrink: 0; }
 }
+.sport-bar ul { justify-content: flex-start !important; align-items: center; } .sb-more { font-size: 13px; color: var(--color-muted); padding-left: 8px; white-space: nowrap; }
+@layer components {
+.ed-card { background: var(--color-white); border: 1px solid var(--color-border); border-radius: 18px; padding: 22px; box-shadow: 0 8px 22px rgb(16 40 75 / .05); }
+@media (min-width: 768px) { .ed-card { padding: 28px 30px; } }
+.ed-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.ed-card-head h2 { font-size: 22px; font-weight: 800; color: var(--color-navy); }
+.ed-ess { display: grid; gap: 0; margin: 0; }
+.ed-ess > div { display: grid; grid-template-columns: auto 130px 1fr; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--color-border); }
+.ed-ess > div:first-child { border-top: 0; }
+@media (max-width: 639px) { .ed-ess > div { grid-template-columns: auto 1fr; } .ed-ess dd { grid-column: 2; } }
+.ed-ess dt { font-size: 13px; font-weight: 700; color: var(--color-muted); }
+.ed-ess dd { margin: 0; font-weight: 700; color: var(--color-navy); }
+.ed-sub { font-weight: 500; color: var(--color-muted); }
+.ed-catrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.ed-catrow li { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--color-border); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.ed-catrow span { color: var(--color-success); font-weight: 800; } .ed-catrow .na { color: var(--color-muted); font-weight: 600; }
+.ed-ess-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--color-border); }
+.ed-card-src { margin-top: 14px; }
+.ed-empty-line { background: var(--color-bg); border-radius: 12px; padding: 14px 16px; color: var(--color-text-2); font-size: 15px; }
+.ed-subsec { padding: 18px 0; border-top: 1px solid var(--color-border); }
+.ed-card-head + .ed-subsec { border-top: 0; padding-top: 0; }
+.ed-subsec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+.ed-subsec-head h3 { font-size: 17px; font-weight: 800; color: var(--color-navy); flex: 1; }
+.ed-cat h4, .ed-prize h4 { font-size: 16px; font-weight: 800; color: var(--color-navy); display: flex; gap: 8px; align-items: center; }
+.ed-org h4 { font-weight: 800; font-size: 17px; color: var(--color-navy); }
+}

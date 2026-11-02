@@ -63,7 +63,7 @@ function SportBar() {
   return (
     <nav className="sport-bar" aria-label="Sports">
       <ul className="wrap">
-        {SPORT_LIST.map((s) => {
+        {SPORT_LIST.filter((s) => s.slug === SCOPE.sport).map((s) => {
           const live = s.slug === SCOPE.sport;
           const inner = <><span className="sb-ic"><SportIcon sport={s.slug} /></span>{s.name}{!live && <span className="sr-only"> (coming soon)</span>}</>;
           return (
@@ -72,6 +72,7 @@ function SportBar() {
             </li>
           );
         })}
+        <li className="sb-more">More sports coming soon</li>
       </ul>
     </nav>
   );

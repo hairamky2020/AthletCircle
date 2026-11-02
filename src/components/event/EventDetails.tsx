@@ -39,21 +39,16 @@ function Source({ k, run }: { k: SectionKey; run: Run }) {
   return <span className="src">{run.provenance === "organizer" ? "From the organizer" : "From public announcements"}</span>;
 }
 
-function Section({ id, k, icon, tone = "blue", title, run, children }: { id: string; k: SectionKey; icon: string; tone?: "blue" | "orange" | "green" | "navy"; title: string; run: Run; children: ReactNode }) {
-  const na = run.details.notApplicable.includes(k);
+
+function Sub({ k, icon, tone = "blue", title, run, children }: { k: SectionKey; icon: string; tone?: "blue" | "orange" | "green" | "navy"; title: string; run: Run; children: ReactNode }) {
   return (
-    <section id={id} className="ed-sec scroll-mt-36" aria-labelledby={`${id}-h`}>
-      <header className="ed-sec-head">
-        <IconTile name={icon} tone={tone} />
-        <h2 id={`${id}-h`}>{title}</h2>
-        <Source k={k} run={run} />
-      </header>
-      {na ? <p className="ed-empty"><Missing label="Not Applicable" /></p> : children}
-    </section>
+    <div className="ed-subsec">
+      <div className="ed-subsec-head"><IconTile name={icon} tone={tone} size="sm" /><h3>{title}</h3><Source k={k} run={run} /></div>
+      {children}
+    </div>
   );
 }
 
-const Empty = ({ children }: { children: ReactNode }) => <div className="ed-empty"><Missing />{children ? <span> · {children}</span> : null}</div>;
 
 function registration(run: Run, now: Date) {
   if (run.status === "cancelled") return { label: "Event cancelled", tone: "err" as const };
@@ -70,10 +65,6 @@ function sportFieldValue(v: unknown) {
   return String(v);
 }
 
-const NAV = [
-  ["overview", "Overview"], ["when", "Date & time"], ["venue", "Venue"], ["categories", "Categories & fees"], ["prizes", "Prizes"],
-  ["schedule", "Schedule"], ["facilities", "Facilities"], ["rules", "Eligibility & rules"], ["organizer", "Organizer"], ["gallery", "Gallery"], ["faqs", "FAQs"],
-] as const;
 
 export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { run: Run; now?: Date; similarPool?: Run[] }) {
   const d = run.details;
@@ -90,9 +81,10 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
   const similar = similarPool.filter((r) => r.slug !== run.slug && rootSport(r.sport)?.slug === root?.slug && !isPast(r, now))
     .sort((a, b) => Math.abs(Date.parse(a.date) - Date.parse(run.date)) - Math.abs(Date.parse(b.date) - Date.parse(run.date))).slice(0, 3)
     .sort((a, b) => a.date.localeCompare(b.date));
+  const filledSport = sportFields.map(([key, f]) => [key, f, sportFieldValue(d.sportFields[key])] as const).filter((x): x is readonly [string, { title?: string }, string] => x[2] !== null);
+  const hasMore = Boolean(d.overview || filledSport.length || d.prizes.length || d.awards.length || d.schedule.length || d.facilities.length || d.eligibility.length || d.rules.length || d.organizer.name || d.gallery.length || d.faqs.length);
   const fees = d.categories.filter((c) => c.fee);
   const feeSummary = fees.length === 0 ? null : fees.length === 1 ? fees[0].fee : `${fees.length} categories · see below`;
-  const prizeSummary = d.prizes.length ? `${d.prizes.length} prize ${d.prizes.length === 1 ? "category" : "categories"}` : null;
   const updated = run.updated ?? run.added;
   const kindLabel = KINDS[run.kind as keyof typeof KINDS]?.label;
 
@@ -152,170 +144,108 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
               <PlacePhoto photo={photoFor(run)} />
             </div>
           </div>
-          <dl className="ed-facts">
-            <div><IconTile name="calendar" tone="orange" size="sm" /><dt>Date</dt><dd>{formatLong(run.date)}</dd></div>
-            <div><IconTile name="clock" tone="blue" size="sm" /><dt>Start time</dt><dd>{fmtTime(run.startTime) ?? <Missing />}</dd></div>
-            <div><IconTile name="ticket" tone="green" size="sm" /><dt>Fee</dt><dd>{feeSummary ?? <Missing />}</dd></div>
-            <div><IconTile name="trophy" tone="orange" size="sm" /><dt>Prizes</dt><dd>{prizeSummary ?? <Missing />}</dd></div>
-            <div><IconTile name="link" tone="navy" size="sm" /><dt>Registration</dt><dd className={`reg-${reg.tone}`}>{reg.label}</dd></div>
-          </dl>
           <Tracker slug={run.slug} />
         </div>
       </section>
 
-      <nav className="ed-nav" aria-label="On this page">
-        <ul className="wrap">{NAV.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ul>
-      </nav>
 
       <div className="wrap ed-body">
         <div className="ed-main">
           {run.status !== "scheduled" && <p className="ed-alert" role="status">This event has been {run.status}. Check with the organizer for updates.</p>}
 
-          {/* 8 · Overview */}
-          <Section id="overview" k="overview" icon="info" title="Event overview" run={run}>
-            {d.overview ? <div className="ed-prose">{d.overview.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)}</div>
-              : <Empty>The organizer hasn’t published a description yet.</Empty>}
-            {run.note && <p className="ed-note">{run.note}</p>}
-          </Section>
-
-          {/* 2 · Sport-specific */}
-          <Section id="sport" k="sport" icon="sliders" tone="green" title={`${root?.name ?? sportName} details`} run={run}>
-            {sportFields.length === 0 ? <Empty>{null}</Empty> : (
-              <dl className="ed-kv">
-                <div><dt>Sport</dt><dd>{sportName}</dd></div>
-                {kindLabel && <div><dt>Event type</dt><dd>{kindLabel}</dd></div>}
-                {sportFields.map(([key, f]) => <div key={key}><dt>{f.title ?? key}</dt><dd>{sportFieldValue(d.sportFields[key]) ?? <Missing />}</dd></div>)}
-              </dl>
-            )}
-          </Section>
-
-          {/* 3 · Date, time, reporting time */}
-          <Section id="when" k="timing" icon="calendar" tone="orange" title="Date and time" run={run}>
-            <div className="ed-tiles">
-              <div className="ed-tile"><IconTile name="calendar" tone="orange" /><span>Date</span><b>{formatLong(run.date)}{run.endDate && ` – ${formatLong(run.endDate)}`}</b></div>
-              <div className="ed-tile"><IconTile name="bell" tone="blue" /><span>Reporting time</span><b>{fmtTime(d.reportingTime) ?? <Missing />}</b></div>
-              <div className="ed-tile"><IconTile name="clock" tone="green" /><span>Start time</span><b>{fmtTime(run.startTime) ?? <Missing />}</b></div>
-              <div className="ed-tile"><IconTile name="timeline" tone="navy" /><span>Ends</span><b>{fmtTime(d.endTime) ?? <Missing />}</b></div>
-            </div>
-            <div className="mt-4" data-track="calendar_add"><AddToCalendar slug={run.slug} title={run.title} date={run.date} endDate={run.endDate} place={placeFull} url={url} /></div>
-          </Section>
-
-          {/* 4 · Venue and map */}
-          <Section id="venue" k="venue" icon="pin" tone="blue" title="Venue and map" run={run}>
-            <dl className="ed-kv">
-              <div><dt>Venue</dt><dd>{run.venue ?? <Missing />}</dd></div>
-              <div><dt>Area</dt><dd>{run.area ?? <Missing />}</dd></div>
-              <div><dt>City</dt><dd>Hyderabad</dd></div>
+          {/* Card 1 · Essentials: the information everyone needs */}
+          <section id="essentials" className="ed-card scroll-mt-28" aria-labelledby="ess-h">
+            <header className="ed-card-head"><IconTile name="calendar" tone="orange" /><h2 id="ess-h">Event essentials</h2></header>
+            <dl className="ed-ess">
+              <div><IconTile name="calendar" tone="orange" size="sm" /><dt>Date</dt><dd>{formatLong(run.date)}{run.endDate && ` – ${formatLong(run.endDate)}`}</dd></div>
+              <div><IconTile name="clock" tone="blue" size="sm" /><dt>Time</dt><dd>{run.startTime ? <>Starts {fmtTime(run.startTime)}{d.reportingTime && <span className="ed-sub"> · Report by {fmtTime(d.reportingTime)}</span>}</> : <Missing />}</dd></div>
+              <div><IconTile name="pin" tone="blue" size="sm" /><dt>Venue</dt><dd>{run.venue ?? (run.area ? <>{run.area}<span className="ed-sub"> · exact venue not announced</span></> : <Missing />)}</dd></div>
+              <div><IconTile name="ticket" tone="green" size="sm" /><dt>Categories &amp; fees</dt><dd>
+                {d.categories.length ? <ul className="ed-catrow">{d.categories.map((c) => <li key={c.name}><b>{c.name}</b>{c.fee ? <span>{c.fee}</span> : <span className="na">Fee not announced</span>}</li>)}</ul>
+                  : run.distances.length ? <>{run.distances.join(" · ")}<span className="ed-sub"> · fees not announced</span></> : <Missing />}
+              </dd></div>
+              <div><IconTile name="trophy" tone="orange" size="sm" /><dt>Prize money</dt><dd>{d.prizes.length ? d.prizes.map((p) => p.category).join(" · ") : <Missing />}</dd></div>
+              <div><IconTile name="link" tone="navy" size="sm" /><dt>Registration</dt><dd className={`reg-${reg.tone}`}>{reg.label}</dd></div>
             </dl>
-            {run.location ? (
-              <div className="mt-4">
-                <LazyMap runs={[run]} zoom={run.location.precision === "area" ? 13 : 15} height="h-[320px]" />
+            <div className="ed-ess-actions">
+              {run.registrationUrl && reg.tone === "ok" && <div className="w-full sm:w-auto sm:min-w-64"><RegisterCta /></div>}
+              <div data-track="calendar_add"><AddToCalendar slug={run.slug} title={run.title} date={run.date} endDate={run.endDate} place={placeFull} url={url} /></div>
+            </div>
+            {!run.registrationUrl && run.status === "scheduled" && !isPast(run, now) && <p className="ed-small">No official registration link yet. <a href={webSearchUrl(run)} target="_blank" rel="noopener" className="link">Search the web ↗</a></p>}
+            {run.location && (
+              <div className="mt-5">
+                <LazyMap runs={[run]} zoom={run.location.precision === "area" ? 13 : 15} height="h-[260px]" />
                 <div className="ed-map-foot">
                   <span>{run.location.precision === "area" ? `The pin marks ${run.area}, not the exact start point.` : "The pin marks the venue."}</span>
                   <a href={directionsUrl(run.location)} target="_blank" rel="noopener" className="link">Get directions ↗</a>
                 </div>
-                <div className="mt-3"><DistanceFromYou to={run.location} precision={run.location.precision} /></div>
+                <div className="mt-2"><DistanceFromYou to={run.location} precision={run.location.precision} /></div>
               </div>
-            ) : <Empty>Map location not announced yet.</Empty>}
-          </Section>
+            )}
+            <p className="ed-card-src"><Source k="basics" run={run} /></p>
+          </section>
 
-          {/* 5 · Categories and fees */}
-          <Section id="categories" k="categories" icon="ticket" tone="green" title="Categories and registration fees" run={run}>
-            {d.categories.length ? (
-              <div className="ed-cats">
-                {d.categories.map((c) => (
-                  <article key={c.name} className="ed-cat">
-                    <div className="ed-cat-top"><h3>{c.name}</h3><span className="ed-fee">{c.fee ?? <Missing />}</span></div>
-                    <dl>
-                      {c.distance && <div><dt>Distance</dt><dd>{c.distance}</dd></div>}
-                      <div><dt>Start</dt><dd>{fmtTime(c.startTime) ?? <Missing />}</dd></div>
-                      {c.cutoff && <div><dt>Cut-off</dt><dd>{c.cutoff}</dd></div>}
-                      {c.ageGroup && <div><dt>Age group</dt><dd>{c.ageGroup}</dd></div>}
-                      {c.slots && <div><dt>Slots</dt><dd>{c.slots}</dd></div>}
-                    </dl>
-                    {c.note && <p className="ed-small">{c.note}</p>}
-                  </article>
-                ))}
-              </div>
-            ) : run.distances.length ? (
-              <div className="ed-cats">{run.distances.map((x) => <article key={x} className="ed-cat"><div className="ed-cat-top"><h3>{x}</h3><span className="ed-fee"><Missing /></span></div></article>)}</div>
-            ) : <Empty>Categories and fees will appear here once announced.</Empty>}
-          </Section>
-
-          {/* 6 · Prizes and awards */}
-          <Section id="prizes" k="prizes" icon="trophy" tone="orange" title="Prize money and awards" run={run}>
-            {d.prizes.length || d.awards.length ? (
-              <>
-                {d.prizes.length > 0 && <div className="ed-prizes">{d.prizes.map((p) => (
-                  <article key={p.category} className="ed-prize">
-                    <h3><Icon name="trophy" className="h-5 w-5" />{p.category}</h3>
-                    <ol>{p.places.map((pl) => <li key={pl.place}><span>{pl.place}</span><b>{pl.award}</b></li>)}</ol>
-                    {p.note && <p className="ed-small">{p.note}</p>}
-                  </article>
-                ))}</div>}
-                {d.awards.length > 0 && <ul className="ed-pills mt-4">{d.awards.map((a) => <li key={a}><Icon name="medal" className="h-4 w-4" />{a}</li>)}</ul>}
-              </>
-            ) : <Empty>Prize money and awards haven’t been announced.</Empty>}
-          </Section>
-
-          {/* 7 · Registration */}
-          <Section id="registration" k="registration" icon="link" tone="navy" title="Registration" run={run}>
-            <div className="ed-reg">
-              <p className={`ed-reg-status reg-${reg.tone}`}><span className="dot" />{reg.label}</p>
-              {run.registrationUrl && reg.tone === "ok"
-                ? <p className="ed-small">Registration happens on the organizer’s official site, not on AthletCircle.</p>
-                : run.status === "scheduled" && !isPast(run, now) && <p className="ed-small">No official link yet. <a href={webSearchUrl(run)} target="_blank" rel="noopener" className="link">Search the web ↗</a></p>}
-              <div className="max-w-sm"><RegisterCta /></div>
-              {run.websiteUrl && <p className="ed-small">Official website: <a href={run.websiteUrl} target="_blank" rel="noopener" className="link">{new URL(run.websiteUrl).hostname} ↗</a></p>}
-            </div>
-          </Section>
-
-          {/* 9 · Schedule */}
-          <Section id="schedule" k="schedule" icon="timeline" tone="blue" title="Event schedule" run={run}>
-            {d.schedule.length ? (
+          {/* Card 2 · More details: only what has actually been announced */}
+          <section id="more" className="ed-card scroll-mt-28" aria-labelledby="more-h">
+            <header className="ed-card-head"><IconTile name="info" tone="blue" /><h2 id="more-h">More details</h2></header>
+            {!hasMore && <p className="ed-empty-line">The organizer hasn’t shared more details yet. Schedule, prizes, facilities, rules and organizer contact will appear here once announced.</p>}
+            {d.overview && <Sub k="overview" icon="info" title="About this event" run={run}><div className="ed-prose">{d.overview.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)}</div></Sub>}
+            {run.note && <p className="ed-note">{run.note}</p>}
+            {filledSport.length > 0 && <Sub k="sport" icon="sliders" tone="green" title={`${root?.name ?? sportName} details`} run={run}>
+              <dl className="ed-kv">{filledSport.map(([key, f, v]) => <div key={key}><dt>{f.title ?? key}</dt><dd>{v}</dd></div>)}</dl>
+            </Sub>}
+            {d.categories.some((c) => c.cutoff || c.ageGroup || c.startTime || c.distance) && <Sub k="categories" icon="ticket" tone="green" title="Categories" run={run}>
+              <div className="ed-cats">{d.categories.map((c) => (
+                <article key={c.name} className="ed-cat">
+                  <div className="ed-cat-top"><h4>{c.name}</h4>{c.fee && <span className="ed-fee">{c.fee}</span>}</div>
+                  <dl>
+                    {c.distance && <div><dt>Distance</dt><dd>{c.distance}</dd></div>}
+                    {c.startTime && <div><dt>Start</dt><dd>{fmtTime(c.startTime)}</dd></div>}
+                    {c.cutoff && <div><dt>Cut-off</dt><dd>{c.cutoff}</dd></div>}
+                    {c.ageGroup && <div><dt>Age group</dt><dd>{c.ageGroup}</dd></div>}
+                    {c.slots && <div><dt>Slots</dt><dd>{c.slots}</dd></div>}
+                  </dl>
+                </article>
+              ))}</div>
+            </Sub>}
+            {(d.prizes.length > 0 || d.awards.length > 0) && <Sub k="prizes" icon="trophy" tone="orange" title="Prize money and awards" run={run}>
+              {d.prizes.length > 0 && <div className="ed-prizes">{d.prizes.map((p) => (
+                <article key={p.category} className="ed-prize">
+                  <h4><Icon name="trophy" className="h-5 w-5" />{p.category}</h4>
+                  <ol>{p.places.map((pl) => <li key={pl.place}><span>{pl.place}</span><b>{pl.award}</b></li>)}</ol>
+                  {p.note && <p className="ed-small">{p.note}</p>}
+                </article>
+              ))}</div>}
+              {d.awards.length > 0 && <ul className="ed-pills mt-3">{d.awards.map((a) => <li key={a}><Icon name="medal" className="h-4 w-4" />{a}</li>)}</ul>}
+            </Sub>}
+            {d.schedule.length > 0 && <Sub k="schedule" icon="timeline" title="Schedule" run={run}>
               <ol className="ed-timeline">{d.schedule.map((s, i) => (
                 <li key={i}><span className="ed-tl-time">{s.date ? `${formatShort(s.date)} · ` : ""}{fmtTime(s.time) ?? "Time TBC"}</span><span className="ed-tl-item">{s.item}</span></li>
               ))}</ol>
-            ) : <Empty>The schedule will appear here once published.</Empty>}
-          </Section>
-
-          {/* 10 · Facilities */}
-          <Section id="facilities" k="facilities" icon="spark" tone="green" title="Participant facilities" run={run}>
-            {d.facilities.length ? (
+            </Sub>}
+            {d.facilities.length > 0 && <Sub k="facilities" icon="spark" tone="green" title="Participant facilities" run={run}>
               <ul className="ed-fac">{d.facilities.map((f) => <li key={f}><IconTile name={f} tone="green" size="sm" />{FACILITIES[f]}</li>)}</ul>
-            ) : <Empty>Facilities haven’t been announced.</Empty>}
-          </Section>
-
-          {/* 11 · Eligibility and rules */}
-          <Section id="rules" k="eligibility" icon="rules" tone="navy" title="Eligibility and rules" run={run}>
-            {d.eligibility.length || d.rules.length ? (
+            </Sub>}
+            {(d.eligibility.length > 0 || d.rules.length > 0) && <Sub k="eligibility" icon="rules" tone="navy" title="Eligibility and rules" run={run}>
               <div className="ed-two">
-                <div><h3 className="ed-h3">Who can take part</h3>{d.eligibility.length ? <ul className="ed-ticks">{d.eligibility.map((e) => <li key={e}>{e}</li>)}</ul> : <Missing />}</div>
-                <div><h3 className="ed-h3">Rules</h3>{d.rules.length ? <ul className="ed-ticks">{d.rules.map((e) => <li key={e}>{e}</li>)}</ul> : <Missing />}</div>
+                {d.eligibility.length > 0 && <div><h4 className="ed-h3">Who can take part</h4><ul className="ed-ticks">{d.eligibility.map((e) => <li key={e}>{e}</li>)}</ul></div>}
+                {d.rules.length > 0 && <div><h4 className="ed-h3">Rules</h4><ul className="ed-ticks">{d.rules.map((e) => <li key={e}>{e}</li>)}</ul></div>}
               </div>
-            ) : <Empty>Eligibility and rules haven’t been announced.</Empty>}
-          </Section>
-
-          {/* 12 · Organizer */}
-          <Section id="organizer" k="organizer" icon="user" tone="blue" title="Organizer" run={run}>
-            {d.organizer.name ? (
+            </Sub>}
+            {d.organizer.name && <Sub k="organizer" icon="user" title="Organizer" run={run}>
               <div className="ed-org">
                 <div className="ed-org-avatar" aria-hidden="true">{d.organizer.name.slice(0, 1)}</div>
                 <div className="min-w-0">
-                  <h3>{d.organizer.name}</h3>
+                  <h4>{d.organizer.name}</h4>
                   <ul className="ed-org-links">
-                    <li><Icon name="mail" className="h-4 w-4" />{d.organizer.email ? <a href={`mailto:${d.organizer.email}`} className="link">{d.organizer.email}</a> : <Missing label="Not Provided" />}</li>
-                    <li><Icon name="phone" className="h-4 w-4" />{d.organizer.phone ? <a href={`tel:${d.organizer.phone.replace(/\s/g, "")}`} className="link">{d.organizer.phone}</a> : <Missing label="Not Provided" />}</li>
-                    <li><Icon name="globe" className="h-4 w-4" />{d.organizer.website ? <a href={d.organizer.website} target="_blank" rel="noopener" className="link">{new URL(d.organizer.website).hostname} ↗</a> : <Missing label="Not Provided" />}</li>
+                    {d.organizer.email && <li><Icon name="mail" className="h-4 w-4" /><a href={`mailto:${d.organizer.email}`} className="link">{d.organizer.email}</a></li>}
+                    {d.organizer.phone && <li><Icon name="phone" className="h-4 w-4" /><a href={`tel:${d.organizer.phone.replace(/\s/g, "")}`} className="link">{d.organizer.phone}</a></li>}
+                    {d.organizer.website && <li><Icon name="globe" className="h-4 w-4" /><a href={d.organizer.website} target="_blank" rel="noopener" className="link">{new URL(d.organizer.website).hostname} ↗</a></li>}
                   </ul>
                 </div>
               </div>
-            ) : <Empty>Organizer details haven’t been provided.</Empty>}
-          </Section>
-
-          {/* 13 · Gallery and videos */}
-          <Section id="gallery" k="gallery" icon="image" tone="orange" title="Gallery and videos" run={run}>
-            {d.gallery.length ? (
+            </Sub>}
+            {d.gallery.length > 0 && <Sub k="gallery" icon="image" tone="orange" title="Gallery and videos" run={run}>
               <ul className="ed-gallery">{d.gallery.map((g) => (
                 <li key={g.url}>
                   {g.type === "image"
@@ -325,18 +255,14 @@ export function EventDetails({ run, now = new Date(), similarPool = RUNS }: { ru
                   <span className="ed-credit">{g.credit}</span>
                 </li>
               ))}</ul>
-            ) : <Empty>No photos or videos yet. Organizers can send them to us.</Empty>}
-          </Section>
-
-          {/* 14 · FAQs */}
-          <Section id="faqs" k="faqs" icon="help" tone="blue" title="Frequently asked questions" run={run}>
-            <div className="ed-faqs">
+            </Sub>}
+            <div className="ed-faqs mt-4">
               {d.faqs.map((f) => <details key={f.q}><summary>{f.q}</summary><p>{f.a}</p></details>)}
-              <details><summary>Do I register on AthletCircle?</summary><p>No. AthletCircle lists events. You register on the organizer’s official registration page, linked above when it has been published.</p></details>
-              <details><summary>What does “Not Announced” mean?</summary><p>The organizer hasn’t published that detail yet. We show it as “Not Announced” instead of guessing, and update the page when it’s announced.</p></details>
-              <details><summary>How far is it from me?</summary><p>Distances on AthletCircle are straight-line (as the crow flies), not road distance. Sharing your location is optional.</p></details>
+              <details><summary>Good to know</summary>
+                <ul className="ed-ticks pb-4"><li>You register on the organizer’s official page, not on AthletCircle.</li><li>“Not Announced” means the organizer hasn’t published it yet. We never guess.</li><li>Distances are straight-line, not road distance. Sharing your location is optional.</li></ul>
+              </details>
             </div>
-          </Section>
+          </section>
 
           <div className="ed-meta">
             <p><Icon name="history" className="h-4 w-4" />Last updated <b>{formatLong(updated)}</b> · Source: {run.source}</p>

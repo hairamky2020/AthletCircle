@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SPORT_LIST, SportIcon } from "@/components/SportIcon";
+import { SportIcon } from "@/components/SportIcon";
 import { LogoIcon } from "@/components/Logo";
 import { sportColour } from "@/lib/brand";
 import { listingHref } from "@/data/events";
@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title: TITLE, description: DESC },
 };
 
-const HERO_SPORTS = ["running", "cycling", "swimming", "football", "cricket", "badminton"];
+// Phase 1 is running only, so the visuals show running formats. Other sports join as they go live.
+const RUN_TILES: [string, string][] = [["5K", "#FF8A00"], ["10K", "#0866E9"], ["Half Marathon", "#36B900"], ["Marathon", "#10284B"], ["Ultra Run", "#FF8A00"], ["Fun Run", "#0866E9"]];
 
 const FEATURES = [
   { title: "Discover Events", text: "Find upcoming sporting events across different cities.", icon: "search", c: "#0866E9" },
@@ -56,15 +57,15 @@ function Glyph({ name }: { name: string }) {
   return <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">{d[name]}</svg>;
 }
 
-function SportTile({ slug, big = false }: { slug: string; big?: boolean }) {
-  const s = SPORT_LIST.find((x) => x.slug === slug)!;
+function RunTile({ label, colour }: { label: string; colour: string }) {
   return (
-    <div className={`ab-tile${big ? " ab-tile-big" : ""}`} style={{ ["--sport" as string]: sportColour(slug) }} role="img" aria-label={`${s.name} illustration`}>
-      <SportIcon sport={slug} className="ab-tile-ic" />
-      <span>{s.name}</span>
+    <div className="ab-tile" style={{ ["--sport" as string]: colour }} role="img" aria-label={`${label} running illustration`}>
+      <SportIcon sport="running" className="ab-tile-ic" />
+      <span>{label}</span>
     </div>
   );
 }
+
 
 function MapIllustration() {
   const pins = [[120, 90, "#FF8A00"], [210, 150, "#0866E9"], [300, 80, "#36B900"], [260, 220, "#FF8A00"], [140, 210, "#7C3AED"]] as const;
@@ -104,8 +105,8 @@ export default function AboutPage() {
               <Link href="/submit" className="ab-btn-ghost">List Your Event</Link>
             </div>
           </div>
-          <div className="ab-collage" aria-label="Sports on AthletCircle">
-            {HERO_SPORTS.map((s) => <SportTile key={s} slug={s} />)}
+          <div className="ab-collage" aria-label="Running formats on AthletCircle">
+            {RUN_TILES.map(([l, c]) => <RunTile key={l} label={l} colour={c} />)}
           </div>
         </div>
       </section>
@@ -117,11 +118,10 @@ export default function AboutPage() {
           <p className="ab-eyebrow">Our vision</p>
           <h2 id="ab-vision">Bringing the Sporting World Together</h2>
           <p>We believe discovering a sporting event, finding the right opportunity and becoming part of a sports community should be simple.</p>
-          <p>Whether you are a runner preparing for your next marathon, a cyclist looking for your next challenge, a swimmer exploring competitions, or someone passionate about cricket, football, badminton or any other sport, AthletCircle aims to be your destination.</p>
+          <p>Whether you are lacing up for your first 5K, training for a half marathon or chasing an ultra, AthletCircle aims to be the one place to find your next run in Hyderabad. More sports will follow as we grow.</p>
           <p className="ab-quote">Our vision is to bring sports events, athletes, organizers and sporting communities together on one platform.</p>
-          <ul className="ab-sport-row" aria-label="Sports on our roadmap">
-            {SPORT_LIST.map((s) => <li key={s.slug} style={{ ["--sport" as string]: sportColour(s.slug) }}><SportIcon sport={s.slug} className="h-4 w-4" />{s.name}</li>)}
-            <li style={{ ["--sport" as string]: "#64748B" }}>+ Other sports</li>
+          <ul className="ab-sport-row" aria-label="Running categories we list">
+            {["3K", "5K", "10K", "Half Marathon", "Full Marathon", "Ultra Run", "Fun Run", "For a Cause"].map((c) => <li key={c} style={{ ["--sport" as string]: sportColour("running") }}><SportIcon sport="running" className="h-4 w-4" />{c}</li>)}
           </ul>
         </div>
       </section>
@@ -211,19 +211,19 @@ export default function AboutPage() {
           <div>
             <p className="ab-eyebrow">For organizers</p>
             <h2 id="ab-org">Are You Organizing a Sports Event?</h2>
-            <p>AthletCircle welcomes sports event organizers, clubs and communities. If you are organizing a marathon, cycling event, swimming competition, badminton tournament, football league or any other sporting event, you can submit your event for consideration.</p>
+            <p>AthletCircle welcomes race organizers, running clubs and communities. If you are organizing a marathon, half marathon, 10K, 5K, trail run or fun run in Hyderabad, you can submit your event for consideration.</p>
             <p>Our team reviews submissions before publishing them on the platform. Our goal is to help organizers reach more athletes and sports enthusiasts while making event discovery easier for everyone.</p>
             <Link href="/submit" className="btn-primary mt-2">Submit Your Event</Link>
           </div>
           <div className="ab-org-tiles" aria-hidden="true">
-            {["running", "cycling", "swimming", "badminton"].map((s) => <SportTile key={s} slug={s} />)}
+            {RUN_TILES.slice(0, 4).map(([l, c]) => <RunTile key={l} label={l} colour={c} />)}
           </div>
         </div>
       </section>
 
       {/* 8 · Closing */}
       <section className="ab-close" aria-labelledby="ab-close">
-        <div className="ab-close-icons" aria-hidden="true">{SPORT_LIST.map((s) => <SportIcon key={s.slug} sport={s.slug} className="ab-close-ic" />)}</div>
+        <div className="ab-close-icons" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <SportIcon key={i} sport="running" className="ab-close-ic" />)}</div>
         <div className="wrap ab-close-inner">
           <h2 id="ab-close">One Platform. Endless Sporting Possibilities.</h2>
           <p>From your first event to your next big achievement, discover more opportunities with AthletCircle.</p>
