@@ -338,7 +338,7 @@
       "10K"
     ],
     "registrationUrl": "https://ifinish.in/running/RFCH26",
-    "note": "In aid of SAHARA Health & Development Society. Registration closes 27 Nov.",
+    "note": "In aid of SAHARA Health & Development Society. Registration closes 28 Nov (indiarunning) / 27 Nov (ifinish).",
     "details": {
       "overview": "Fee listed from ₹699.",
       "categories": [
@@ -437,7 +437,7 @@
     "slug": "freshathon-winter-rush-2026",
     "title": "Freshathon Winter Rush: Paint the City Red",
     "date": "2026-12-13",
-    "source": "endorfin.run listing",
+    "source": "endorfin.run, indiarunning.com listing",
     "added": "2026-10-30",
     "kind": "theme",
     "websiteUrl": "https://www.endorfin.run/running-events/f33dce02-4ca2-4cc9-bab3-6ed4d892852c",
@@ -445,7 +445,13 @@
       "overview": "Fee listed from ₹599."
     },
     "updated": "2026-11-02",
-    "provenance": "public"
+    "provenance": "public",
+    "distances": [
+      "3K",
+      "5K",
+      "10K"
+    ],
+    "note": "Paint the City Red, Hyderabad edition. Registration closes 1 Dec."
   },
   {
     "slug": "telangana-ultra-marathon-2026",
@@ -502,7 +508,7 @@
       "21.1K"
     ],
     "registrationUrl": "https://registrations.indiarunning.com/telangana_half_marathon_2k27_33872",
-    "note": "2nd edition. Other listings show different fees; confirm on the registration page.",
+    "note": "2nd edition. Registration closes 16 Jan 2027. Listings show different fees (from ₹599 on indiarunning); confirm on the registration page.",
     "details": {
       "categories": [
         {
@@ -540,14 +546,14 @@
     "source": "indiarunning.com",
     "added": "2026-10-30",
     "kind": "community",
-    "venue": "Hussain Sagar / Necklace Road",
+    "venue": "Sanjeevaiah Park, Necklace Road",
     "distances": [
       "3K",
       "5K",
       "10K"
     ],
     "registrationUrl": "https://registrations.indiarunning.com/hare_krishna_run_2027__2nd_edition_9587",
-    "note": "2nd edition. Start time not clearly announced.",
+    "note": "2nd edition. Run for an addiction-free Bharat. Registration closes 1 Feb 2027.",
     "details": {
       "categories": [
         {
@@ -555,17 +561,17 @@
           "fee": "₹699"
         },
         {
-          "name": "5K",
+          "name": "5K Bhakti Run",
           "fee": "₹799",
           "note": "Not timed"
         },
         {
-          "name": "5K",
+          "name": "5K Bhakti Run",
           "fee": "₹999",
           "note": "Timed"
         },
         {
-          "name": "10K",
+          "name": "10K Harinaam Run",
           "fee": "₹1,099",
           "note": "Timed"
         }
@@ -598,7 +604,7 @@
       "10K"
     ],
     "registrationUrl": "https://registrations.indiarunning.com/finrun_2027_run_against_cyber_crime_33424",
-    "note": "Run against cyber crime.",
+    "note": "Run against cyber crime. Registration closes 6 Feb 2027.",
     "details": {
       "reportingTime": "06:00",
       "categories": [
@@ -614,7 +620,10 @@
           "name": "10K",
           "fee": "To Be Confirmed"
         }
-      ]
+      ],
+      "organizer": {
+        "name": "DFAIRS"
+      }
     },
     "updated": "2026-11-02",
     "provenance": "public"
@@ -623,14 +632,48 @@
     "slug": "womens-day-run-2027",
     "title": "International Women's Day Run",
     "date": "2027-03-07",
-    "source": "endorfin.run listing",
+    "source": "endorfin.run, indiarunning.com listing",
     "added": "2026-10-30",
     "kind": "theme",
     "websiteUrl": "https://www.endorfin.run/running-events/international_womens_day_run__mana_hyderabad_37854",
     "details": {
-      "overview": "Mana Hyderabad Half Marathon. Fee listed from ₹699."
+      "overview": "Mana Hyderabad Half Marathon. Fee listed from ₹699.",
+      "categories": [
+        {
+          "name": "3K Fun Run"
+        },
+        {
+          "name": "5K",
+          "note": "Timed"
+        },
+        {
+          "name": "10K",
+          "note": "Timed"
+        },
+        {
+          "name": "21.1K",
+          "note": "Timed"
+        }
+      ],
+      "facilities": [
+        "tshirt",
+        "medal",
+        "certificate",
+        "refreshments"
+      ],
+      "organizer": {
+        "name": "Gagner Sports",
+        "phone": "9840547782"
+      }
     },
     "updated": "2026-11-02",
-    "provenance": "public"
+    "provenance": "public",
+    "distances": [
+      "3K",
+      "5K",
+      "10K",
+      "21.1K"
+    ],
+    "note": "Open to women and men. Registration closes 6 Mar 2027."
   }
 ]

@@ -98,7 +98,7 @@ async function run(label, ctxOpts) {
   await shot("run");
   check(await page.getByRole("button", { name: /Registered|I’m registered/ }).isVisible(), "run page has My runs toggle");
   check((await page.locator('a[href^="https://wa.me/?text="]').count()) >= 1, "WhatsApp share link");
-  for (const h of ["Event essentials", "More details"])
+  for (const h of ["Run categories & fees", "What’s included", "Venue & location", "Organiser"])
     check(await page.getByRole("heading", { name: h, exact: true }).isVisible(), `section: ${h}`);
   { const mob = label === "mobile"; check(await page.locator(mob ? ".ed-mobile-cta" : ".ed-panel").isVisible(), mob ? "mobile registration bar" : "registration panel"); }
   await page.locator(".ed-crumbs").getByRole("link", { name: "Running events", exact: true }).click(); await page.waitForLoadState(); await settle();
