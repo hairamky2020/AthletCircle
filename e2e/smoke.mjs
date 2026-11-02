@@ -31,52 +31,46 @@ async function run(label, ctxOpts) {
   const settle = () => page.waitForTimeout(700);
 
   await page.goto(url("/")); await settle();
-  check(await page.locator(".banner .slide.is-active").isVisible(), "home: featured carousel");
-  check((await page.locator(".cat-card").count()) >= 5, "home: event categories");
-  check((await page.locator(".ad-slot").count()) >= 2, "home: ad spaces");
-  check(await page.locator(".countdown-card").isVisible(), "home: next run countdown");
-  for (const h of ["Event categories", "Upcoming runs", "All runs at a glance", "Calendar", "Map", "My runs"]) {
-    check((await page.getByRole("heading", { name: new RegExp(h) }).count()) > 0, `one page has section: ${h}`);
-  }
-  const cards = () => page.locator("#upcoming a.run-card");
-  check((await cards().count()) >= 10, `upcoming cards (${await cards().count()})`);
+  check(await page.getByRole("heading", { name: /Find your next run/ }).isVisible(), "home: hero");
+  check((await page.locator(".featured-strip .poster").count()) >= 3, "home: featured cards");
+  check((await page.locator(".ad-slot").count()) === 1, "home: one ad space");
+  const cards = () => page.locator("#upcoming a.run-card2");
+  check((await cards().count()) >= 10, `run cards (${await cards().count()})`);
   check(!(await page.content()).includes("Demo"), "no demo data");
   await shot("home");
 
-  await page.getByLabel("Month", { exact: true }).selectOption("2026-12"); await settle();
-  check((await cards().count()) === 3, `month filter (December: ${await cards().count()})`);
-  check((await page.locator("#list li").count()) === 3, "filters apply to the list too");
-  check(page.url().includes("month=2026-12"), "month filter in URL");
-  await page.getByRole("button", { name: "Clear" }).click(); await settle();
+  await page.getByRole("button", { name: "Next 30 days" }).click(); await settle();
+  const n30 = await cards().count();
+  check(n30 > 0 && n30 < 13 && page.url().includes("when=month"), `when filter (${n30})`);
+  await page.getByRole("button", { name: "Any time" }).click(); await settle();
+  await page.getByRole("group", { name: "Type of run" }).getByRole("button", { name: "Ultra" }).click(); await settle();
+  check((await cards().count()) >= 1 && (await cards().first().textContent()).includes("Ultra"), "type filter");
+  await page.getByRole("button", { name: "All types" }).click(); await settle();
+  await page.getByLabel("Search runs or areas").fill("gachibowli"); await settle();
+  const g = await cards().count();
+  check(g >= 1 && (await cards().allTextContents()).every((t) => /Gachibowli/.test(t)), `search (${g})`);
+  await page.getByLabel("Search runs or areas").fill(""); await settle();
 
-  const gLabel = (await page.getByLabel("Area", { exact: true }).locator("option", { hasText: "Gachibowli" }).textContent()).trim();
-  const gN = Number(gLabel.match(/\((\d+)\)/)[1]);
-  await page.getByLabel("Area", { exact: true }).selectOption({ label: gLabel }); await settle();
-  check((await cards().count()) === gN, `area filter (${gLabel})`);
-  await page.getByRole("button", { name: "Clear" }).click(); await settle();
-
-  await page.getByRole("button", { name: "Nearest to me" }).click(); await settle();
-  await page.getByRole("button", { name: /Use my current location/ }).click(); await page.waitForTimeout(1200);
-  check(await page.locator("#upcoming").getByText(/away/).first().isVisible(), "nearest to me shows distances");
-  const firstRun = await cards().first().locator("p").first().textContent();
+  await page.getByRole("button", { name: "Near me" }).click(); await page.waitForTimeout(1200);
+  check(await page.getByText(/nearest first, straight-line/).isVisible(), "near me sorts nearest first");
+  const firstRun = await cards().first().locator(".rc-title").textContent();
   check(/Signathon|Hitech|Rehabathon|Sankalp/.test(firstRun ?? ""), `nearest first is a Gachibowli run (${firstRun?.trim()})`);
-  await page.getByRole("button", { name: "Clear" }).click(); await settle();
+  check(await cards().first().getByText(/KM|M$/).first().isVisible(), "cards show distance");
+  await page.getByRole("button", { name: /Near / }).click(); await settle();
 
-  // My runs
-  await cards().nth(1).getByRole("button", { name: /registered/ }).click(); await settle();
-  await page.locator("#list").getByRole("button", { name: /I’m registered/ }).nth(3).click(); await settle();
-  check((await page.locator(".my-runs-count").textContent()) === "2", "My runs button counts 2");
-  await page.getByRole("link", { name: /My runs/ }).first().click(); await page.waitForTimeout(1200);
-  check((await page.locator("#my-runs ol li").count()) === 2, "My runs section lists them");
-  await shot("myruns");
+  // Saved
+  await cards().nth(0).getByRole("button", { name: /^Save/ }).click();
+  await cards().nth(2).getByRole("button", { name: /^Save/ }).click(); await settle();
+  check((await page.locator(".my-runs-count").textContent()) === "2", "header Saved counts 2");
+  await page.getByRole("tab", { name: /Saved/ }).click(); await settle();
+  check((await cards().count()) === 2, "Saved view lists them");
+  await shot("saved");
 
-  await page.locator(".section-nav").getByRole("link", { name: "Calendar" }).click(); await page.waitForTimeout(1200);
-  check(await page.locator('.section-nav a[aria-current="true"]').textContent() === "Calendar", "sticky menu scrolls and highlights");
+  await page.getByRole("tab", { name: "Calendar" }).click(); await settle();
   await page.getByRole("button", { name: "Next month" }).click(); await settle();
-  check(/November|December/.test(await page.locator(".cal-poster-month").textContent()), "calendar navigates months");
-  await shot("calendar");
+  check(/November|December|January/.test(await page.locator(".cal-poster-month").textContent()), "calendar view navigates months");
 
-  await page.locator("#map").scrollIntoViewIfNeeded(); await page.waitForTimeout(2500);
+  await page.getByRole("tab", { name: "Map" }).click(); await page.waitForTimeout(2500);
   const markers = await page.locator(".rc-marker").count();
   check(markers >= 3, `map markers (${markers})`);
   await page.locator(".rc-marker").first().evaluate((el) => el.scrollIntoView({ block: "center" })); await settle();

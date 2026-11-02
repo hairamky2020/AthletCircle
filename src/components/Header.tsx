@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LocationPill } from "./location/LocationPill";
 import { LogoMark } from "./Logo";
 import { useMyRuns } from "@/lib/myRuns";
 import { SCOPE, listingHref } from "@/data/events";
@@ -38,9 +37,8 @@ export function Header() {
               <option disabled>More cities soon</option>
             </select>
           </label>
-          <span className="hidden md:block"><LocationPill /></span>
           <Link href="/#my-runs" className="my-runs-btn">
-            My runs<span className="my-runs-count">{slugs.length}</span>
+            ♥ Saved<span className="my-runs-count">{slugs.length}</span>
           </Link>
           <button className="menu-btn 2xl:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)} aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
